@@ -82,7 +82,7 @@ std::int64_t APS5_VABI ASN1_INTEGER_get_nid_postfix(const void* value) {
     const auto& integer = *static_cast<const Asn1String*>(value);
     if (integer.type != 2 && integer.type != 0x102) return -1;
     if (integer.length > 8) return -1;
-    if (!integer.data) return 0;
+    if (integer.length <= 0 || !integer.data) return 0;
     std::uint64_t magnitude = 0;
     for (int index = 0; index < integer.length; ++index) magnitude = (magnitude << 8) | integer.data[index];
     if (magnitude > static_cast<std::uint64_t>(std::numeric_limits<std::int64_t>::max()))

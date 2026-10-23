@@ -11,5 +11,7 @@
 
 ### Functional
 
+- [ASN1_INTEGER_get](../../../core/libs/prx/libSceLibreSsl/src/Asn1.cpp) has no console verification for nonpositive lengths. It follows [LibreSSL 2.5.4](https://github.com/libressl/openbsd/blob/2e2c612066aa993717528a0249c15c51128d61cb/src/lib/libcrypto/asn1/a_int.c#L363-L389): valid integer types return zero without reading data when length is zero or negative; invalid types return -1 first. Later LibreSSL versions reject negative lengths through `ASN1_INTEGER_get_int64`; that later contract is not used for this library.
+
 
 - [ASN1_INTEGER_get and ASN1_STRING_data/length/type/to_UTF8](../../../core/libs/prx/libSceLibreSsl/src/Asn1.cpp) are unverified on PS5. Signatures, the 24-byte guest string layout and conversions follow [LibreSSL 2.5.4's ASN.1 sources](https://github.com/libressl/openbsd/tree/2e2c612066aa993717528a0249c15c51128d61cb/src/lib/libcrypto/asn1), the version reported for firmware 13.40 in [discussion #8981](https://github.com/boykopovar/AnyPS5/discussions/8981#discussioncomment-19111214). Null accessor inputs, null conversion outputs, missing nonempty data, oversized converted output and integer magnitudes exceeding INT64_MAX throw where the source has undefined behaviour. Malformed encodings and allocation failure throw until ASN.1 error-queue reporting is implemented. Conversion buffers use the guest libc allocator and can be released with guest `free`.

@@ -109,8 +109,18 @@ void Integers() {
     Require(ASN1_INTEGER_get_nid_postfix(&value) == -1, "overlength is rejected before null data");
     value.length = 8;
     Require(ASN1_INTEGER_get_nid_postfix(&value) == 0, "integer with null data");
+    for (int length : {std::numeric_limits<std::int32_t>::min(), -8, -1, 0}) {
+        for (int type : {2, 0x102}) {
+            for (auto* bytes : {data, static_cast<unsigned char*>(nullptr), reinterpret_cast<unsigned char*>(1)}) {
+                value = {length, type, bytes, -1};
+                const String original = value;
+                Require(ASN1_INTEGER_get_nid_postfix(&value) == 0, "LibreSSL 2.5.4 nonpositive integer length");
+                Require(value.length == original.length && value.type == original.type && value.data == original.data
+                    && value.flags == original.flags, "nonpositive integer length preserves input");
+            }
+        }
+    }
     value = {-1, 2, data, 0};
-    Require(ASN1_INTEGER_get_nid_postfix(&value) == 0, "negative integer length");
     for (int type : {-1, 0, 1, 3, 12, 0x100, 0x202, 0x302}) {
         value.type = type;
         Require(ASN1_INTEGER_get_nid_postfix(&value) == -1, "only integer types are accepted");
