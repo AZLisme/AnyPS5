@@ -13,6 +13,27 @@ if(BUILD_TESTING)
     add_test(NAME guest_avplayer COMMAND guest_avplayer_tests)
     add_test(NAME guest_avplayer_callback_close COMMAND guest_avplayer_tests --callback-close)
     add_test(NAME guest_avplayer_paused_first_video COMMAND guest_avplayer_tests --paused-first-video)
+    find_package(Python3 COMPONENTS Interpreter QUIET)
+    if(Python3_Interpreter_FOUND)
+        add_test_executable(avplayer_http_transport_tests ${LIBS_INCLUDE_DIR}/tests/AvPlayerHttpTransport.cpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/src/HttpStream.cpp)
+        target_include_directories(avplayer_http_transport_tests PRIVATE ${LIBS_INCLUDE_DIR})
+        target_link_libraries(avplayer_http_transport_tests PRIVATE ffmpeg libc)
+        configure_windows_unwind(avplayer_http_transport_tests)
+        if(WIN32)
+            target_link_libraries(avplayer_http_transport_tests PRIVATE ws2_32)
+        endif()
+        file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/guest_avplayer_http)
+        add_test(NAME guest_avplayer_http COMMAND ${Python3_EXECUTABLE}
+            ${LIBS_INCLUDE_DIR}/tests/AvPlayerHttpServer.py $<TARGET_FILE:guest_avplayer_tests>)
+        set_tests_properties(guest_avplayer_http PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/guest_avplayer_http TIMEOUT 20)
+        file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/avplayer_http_transport)
+        add_test(NAME avplayer_http_transport COMMAND ${Python3_EXECUTABLE}
+            ${LIBS_INCLUDE_DIR}/tests/AvPlayerHttpServer.py $<TARGET_FILE:avplayer_http_transport_tests> transport)
+        set_tests_properties(avplayer_http_transport PROPERTIES
+            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/avplayer_http_transport TIMEOUT 10)
+    endif()
     set_tests_properties(guest_avplayer_paused_first_video PROPERTIES
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/guest_avplayer_paused_first_video
         TIMEOUT 20)
@@ -24,6 +45,10 @@ if(BUILD_TESTING)
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/guest_avplayer
         TIMEOUT 20 RUN_SERIAL TRUE)
     if(WIN32)
+        if(TEST guest_avplayer_http)
+            set_tests_properties(guest_avplayer_http avplayer_http_transport PROPERTIES ENVIRONMENT_MODIFICATION
+                "PATH=path_list_prepend:$<TARGET_FILE_DIR:libSceAvPlayer>")
+        endif()
         set_tests_properties(guest_avplayer PROPERTIES ENVIRONMENT_MODIFICATION
             "PATH=path_list_prepend:$<TARGET_FILE_DIR:libSceAvPlayer>")
         set_tests_properties(guest_avplayer_paused_first_video PROPERTIES ENVIRONMENT_MODIFICATION

@@ -4,10 +4,14 @@ function(add_sce_avplayer_library target)
             ${avPlayerDir}/Export.cpp
             ${avPlayerDir}/src/Player.cpp
             ${avPlayerDir}/src/Source.cpp
+            ${avPlayerDir}/src/HttpStream.cpp
             ${avPlayerDir}/../libkernel/Time/TimedWait.cpp
     )
     target_include_directories(${target} PRIVATE ${LIBS_INCLUDE_DIR})
     target_link_libraries(${target} PRIVATE ffmpeg libc)
+    if(WIN32)
+        target_link_libraries(${target} PRIVATE ws2_32)
+    endif()
     set_target_properties(${target} PROPERTIES
             CXX_VISIBILITY_PRESET hidden
             VISIBILITY_INLINES_HIDDEN ON
