@@ -123,12 +123,16 @@ static int UnregisterCallback(CallbackSlot (&callbacks)[MAX_CALLBACKS], int cid)
     return 0;
 }
 
-static bool HasIpv4Callback() {
+static unsigned RegisteredCallbackFamilies() {
     std::lock_guard lock(g_callbackLock);
+    unsigned families = 0;
     for (const auto& slot : g_callbacks) {
-        if (slot.func) return true;
+        if (slot.func) families |= 1;
     }
-    return false;
+    for (const auto& slot : g_callbacksV6) {
+        if (slot.func) families |= 2;
+    }
+    return families;
 }
 
 static bool QueryHostHasAddress(int family) {
@@ -516,19 +520,31 @@ extern "C" {
 
 int APS5_VABI sceNetCtlCheckCallback(void) {
     if (!g_initialized.load()) return SCE_NET_CTL_ERROR_NOT_INITIALIZED;
-    if (!HasIpv4Callback()) return 0;
-    const int event = HostHasAddress(AF_UNSPEC) ? NET_CTL_EVENT_IPOBTAINED : NET_CTL_EVENT_DISCONNECTED;
-    CallbackSlot due[MAX_CALLBACKS];
+    const unsigned families = RegisteredCallbackFamilies();
+    if (families == 0) return 0;
+    const int ipv4Event = (families & 1) ? (HostHasAddress(AF_UNSPEC) ? NET_CTL_EVENT_IPOBTAINED : NET_CTL_EVENT_DISCONNECTED) : 0;
+    const int ipv6Event = (families & 2) ? (HostHasAddress(AF_INET6) ? NET_CTL_EVENT_IPOBTAINED : NET_CTL_EVENT_DISCONNECTED) : 0;
+    struct Delivery {
+        CallbackSlot callback;
+        int event;
+    };
+    Delivery due[2 * MAX_CALLBACKS];
     int count = 0;
     {
         std::lock_guard lock(g_callbackLock);
-        for (auto& slot : g_callbacks) {
-            if (!slot.func || slot.lastEvent == event) continue;
-            slot.lastEvent = event;
-            due[count++] = slot;
-        }
+        const auto collect = [&](CallbackSlot (&callbacks)[MAX_CALLBACKS], int event) {
+            if (event == 0) return;
+            for (auto& slot : callbacks) {
+                if (!slot.func || slot.lastEvent == event) continue;
+                slot.lastEvent = event;
+                due[count++] = {slot, event};
+            }
+        };
+        collect(g_callbacks, ipv4Event);
+        collect(g_callbacksV6, ipv6Event);
     }
-    for (int index = 0; index < count; ++index) due[index].func(event, due[index].arg);
+    for (int index = 0; index < count; ++index)
+        due[index].callback.func(due[index].event, due[index].callback.arg);
     return 0;
 }
 
