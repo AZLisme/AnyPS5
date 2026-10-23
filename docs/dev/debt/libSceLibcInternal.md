@@ -7,6 +7,7 @@
 
 ### Functional
 
+- [fpurge](../../../core/libs/prx/libSceLibcInternal/StreamPurge.cpp) has no PS5 verification. It follows [FreeBSD 11.4](https://github.com/freebsd/freebsd-src/blob/8c639945a44588f6cfdddfb057bb5aad88735da0/lib/libc/stdio/fpurge.c) through native glibc or BSD buffer purging. Windows, other hosts without that API, random-device streams and caller-populated guest buffer pointers, sizes or counters throw before purging; the host-backed stream cannot synchronize a second guest buffer. A null stream throws where FreeBSD dereferences it. Native EOF/error indicators and guest flags are preserved. Only glibc has been run. Closes when: unsupported buffers and hosts are implemented and compared with the console.
 - [makecontext](../../../core/libs/prx/libSceLibcInternal/UserContext.cpp) (libSceLibcInternal) follows FreeBSD 11's `lib/libc/amd64/gen/makecontext.c`: at most six arguments, a stack of at least `MINSIGSTKSZ` (2048) bytes, and `exit(0)` when the function returns with no `uc_link`. The console's version is not verified
 - [makecontext](../../../core/libs/prx/libSceLibcInternal/UserContext.cpp) (libSceLibcInternal) on Windows pins its stack writable until a later `makecontext` stack overlaps it, since nothing tells the library when the guest frees the stack
 - [Thread exit destructors](../../../core/libs/prx/libSceLibcInternal/Export.cpp) (libSceLibcInternal) run when a libkernel thread finishes; on the main or a host thread only `_sceLibcInternalThreadDtors` runs them, as `exit` does, else they are dropped
