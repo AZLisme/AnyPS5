@@ -80,6 +80,7 @@ uint32_t sbcToUnicode(const uint8_t* profile, uint8_t sbc) {
 }
 
 bool unicodeToSbc(const uint8_t* profile, uint32_t code, uint8_t& sbc) {
+    if (code == SingleByte::Unassigned) return false;
     if (const uint16_t* high = sbcHighTable(profile)) {
         if (code < 0x80) {
             sbc = static_cast<uint8_t>(code);
@@ -305,7 +306,7 @@ int decodeMbcs(const void* profile, const uint8_t* mbcs, uint32_t mbcsMax, uint3
     if (isSbc(profile)) {
         length = 1;
         code = sbcToUnicode(static_cast<const uint8_t*>(profile), lead);
-        return 0;
+        return code == SingleByte::Unassigned ? CES_ERROR_UNASSIGNED_CODE : 0;
     }
     if (isSjis(profile)) {
         if (lead < 0x80) {
@@ -788,6 +789,26 @@ const uint8_t* APS5_VABI sceCesRefersUcsProfileCp1258(void) {
     return singleByteProfile(SingleByte::Cp1258);
 }
 
+const uint8_t* APS5_VABI sceCesRefersUcsProfileIso8859_3(void) {
+    return singleByteProfile(SingleByte::Iso8859_3);
+}
+
+const uint8_t* APS5_VABI sceCesRefersUcsProfileIso8859_6(void) {
+    return singleByteProfile(SingleByte::Iso8859_6);
+}
+
+const uint8_t* APS5_VABI sceCesRefersUcsProfileIso8859_7(void) {
+    return singleByteProfile(SingleByte::Iso8859_7);
+}
+
+const uint8_t* APS5_VABI sceCesRefersUcsProfileIso8859_8(void) {
+    return singleByteProfile(SingleByte::Iso8859_8);
+}
+
+const uint8_t* APS5_VABI sceCesRefersUcsProfileIso8859_11(void) {
+    return singleByteProfile(SingleByte::Iso8859_11);
+}
+
 void* APS5_VABI sceCesUcsProfileInitSJis1997Cp932(void* sheet) {
     if (!sheet) return nullptr;
     std::memcpy(sheet, SJIS_TAG, sizeof(SJIS_TAG));
@@ -878,7 +899,9 @@ int APS5_VABI sceCesSbcToUtf8(const uint8_t* profile, uint8_t sbc, uint8_t* utf8
     if (!utf8) return CES_ERROR_INVALID_DST_BUFFER;
 
     uint8_t encoded[3];
-    const uint32_t length = encodeUtf8(sbcToUnicode(profile, sbc), encoded);
+    const uint32_t code = sbcToUnicode(profile, sbc);
+    if (code == SingleByte::Unassigned) return CES_ERROR_UNASSIGNED_CODE;
+    const uint32_t length = encodeUtf8(code, encoded);
     if (utf8max < length) return CES_ERROR_DST_BUFFER_END;
     for (uint32_t i = 0; i < length; ++i) utf8[i] = encoded[i];
     if (utf8_len) *utf8_len = length;
