@@ -153,6 +153,7 @@ struct Ngs2Voice {
 
     void SetEvent(std::uint32_t eventId);
     void ResetSetup();
+    std::size_t PcmFrameBytes() const;
     const std::uint8_t* WaveformData() const;
     std::uint32_t InputChannels() const { return inputChannels != 0 ? inputChannels : channels; }
 };

@@ -1,8 +1,10 @@
 #include <algorithm>
+#include <bit>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <limits>
 #include <numbers>
 #include <stdexcept>
 #include <string>
@@ -13,9 +15,10 @@
 
 static constexpr double PHASE_ONE = 4294967296.0;
 static constexpr std::uint64_t PHASE_FRACTION = 0xffffffff;
+static_assert(sizeof(float) == 4 && std::numeric_limits<float>::is_iec559);
 
 static const std::uint8_t* FrameAt(const Ngs2Voice& voice, const Ngs2Block& block, std::uint32_t frame) {
-    const std::size_t frameBytes = voice.channels * sizeof(std::int16_t);
+    const std::size_t frameBytes = voice.PcmFrameBytes();
     if (block.data == nullptr) return nullptr;
     if (block.streaming) {
         for (const auto& piece : block.pieces) {
@@ -32,6 +35,14 @@ static void ReadPcm(const Ngs2Voice& voice, const std::uint8_t* frame, float* ou
         return;
     }
     for (std::uint32_t channel = 0; channel < voice.channels; channel++) {
+        if (voice.waveformType == SCE_NGS2_WAVEFORM_TYPE_PCM_F32L) {
+            const auto* source = frame + channel * sizeof(float);
+            const std::uint32_t bits = source[0] | (std::uint32_t{source[1]} << 8) | (std::uint32_t{source[2]} << 16) | (std::uint32_t{source[3]} << 24);
+            const float sample = std::bit_cast<float>(bits);
+            if (!std::isfinite(sample)) NotImplemented_nid_no_patch("NGS2: non-finite float PCM input");
+            out[channel] = sample;
+            continue;
+        }
         std::int16_t sample;
         std::memcpy(&sample, frame + channel * sizeof(sample), sizeof(sample));
         out[channel] = sample / 32768.0f;
@@ -93,7 +104,7 @@ static void Advance(Ngs2Voice& voice, std::uint64_t frames) {
         const auto step = std::min<std::uint64_t>(frames, limit - block.cursor);
         block.cursor += static_cast<std::uint32_t>(step);
         voice.decodedSamples += step;
-        if (voice.waveformType != SCE_NGS2_WAVEFORM_TYPE_ATRAC9) voice.decodedBytes += step * voice.channels * sizeof(std::int16_t);
+        if (voice.waveformType != SCE_NGS2_WAVEFORM_TYPE_ATRAC9) voice.decodedBytes += step * voice.PcmFrameBytes();
         frames -= step;
         if (block.streaming) {
             while (block.pieces.size() > 1 && block.cursor >= block.pieces.front().firstFrame + block.pieces.front().frames) block.pieces.erase(block.pieces.begin());
