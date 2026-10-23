@@ -1,3 +1,16 @@
-add_library(${LIB_NAME} SHARED EXCLUDE_FROM_ALL Export.cpp Export.Discovery.cpp Aio.cpp ThreadQueries.cpp)
+add_library(${LIB_NAME} SHARED EXCLUDE_FROM_ALL Export.cpp Export.Discovery.cpp Aio.cpp ThreadQueries.cpp Scheduler.cpp)
 target_include_directories(${LIB_NAME} PRIVATE ${LIBS_INCLUDE_DIR})
 configure_windows_unwind(${LIB_NAME})
+
+if(BUILD_TESTING)
+    add_test_executable(guest_setscheduler_tests tests/Scheduler.cpp)
+    target_include_directories(guest_setscheduler_tests PRIVATE ${LIBS_INCLUDE_DIR})
+    target_link_libraries(guest_setscheduler_tests PRIVATE libkernel_sys libkernel libc)
+    configure_windows_unwind(guest_setscheduler_tests)
+    add_test(NAME guest_setscheduler COMMAND guest_setscheduler_tests)
+    set_tests_properties(guest_setscheduler PROPERTIES TIMEOUT 20)
+    if(WIN32)
+        set_tests_properties(guest_setscheduler PROPERTIES ENVIRONMENT_MODIFICATION
+            "PATH=path_list_prepend:$<TARGET_FILE_DIR:libkernel_sys>")
+    endif()
+endif()
