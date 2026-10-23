@@ -2,6 +2,7 @@ add_library(libSceFreeType SHARED EXCLUDE_FROM_ALL
         Export.cpp
         src/GuestObjects.cpp
         src/Names.cpp
+        src/OutlineSynthesis.cpp
 )
 target_include_directories(libSceFreeType PRIVATE ${LIBS_INCLUDE_DIR})
 target_link_libraries(libSceFreeType PRIVATE freetype)
@@ -53,6 +54,18 @@ if(BUILD_TESTING)
         set_tests_properties(guest_freetype PROPERTIES ENVIRONMENT_MODIFICATION
             "PATH=path_list_prepend:$<TARGET_FILE_DIR:libSceFreeType>")
         set_tests_properties(guest_freetype_charmap PROPERTIES ENVIRONMENT_MODIFICATION
+            "PATH=path_list_prepend:$<TARGET_FILE_DIR:libSceFreeType>")
+    endif()
+endif()
+
+if(BUILD_TESTING)
+    add_test_executable(guest_freetype_outline_synthesis_tests ${LIBS_INCLUDE_DIR}/tests/GuestFreeTypeOutlineSynthesis.cpp)
+    target_include_directories(guest_freetype_outline_synthesis_tests PRIVATE ${LIBS_INCLUDE_DIR})
+    target_link_libraries(guest_freetype_outline_synthesis_tests PRIVATE libSceFreeType freetype libc)
+    configure_windows_unwind(guest_freetype_outline_synthesis_tests)
+    add_test(NAME guest_freetype_outline_synthesis COMMAND guest_freetype_outline_synthesis_tests)
+    if(WIN32)
+        set_tests_properties(guest_freetype_outline_synthesis PROPERTIES ENVIRONMENT_MODIFICATION
             "PATH=path_list_prepend:$<TARGET_FILE_DIR:libSceFreeType>")
     endif()
 endif()
