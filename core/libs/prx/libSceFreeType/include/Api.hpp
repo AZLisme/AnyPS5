@@ -4,6 +4,8 @@
 #include "prx/libSceFreeType/include/GuestFreeType.hpp"
 #include "SceTypes.hpp"
 
+struct FT_StrokerRec_;
+
 extern "C" {
 
 int APS5_VABI FT_Init_FreeType_nid_postfix(FreeType::GuestLibrary** alibrary);
@@ -62,5 +64,16 @@ std::int64_t APS5_VABI FT_Sin_nid_postfix(std::int64_t angle);
 std::int64_t APS5_VABI FT_Tan_nid_postfix(std::int64_t angle);
 void APS5_VABI FT_Vector_Unit_nid_postfix(FreeType::GuestVector* vector, std::int64_t angle);
 std::int64_t APS5_VABI FT_Angle_Diff_nid_postfix(std::int64_t first, std::int64_t second);
+
+int APS5_VABI FT_Stroker_New_nid_postfix(FreeType::GuestLibrary* library, FT_StrokerRec_** stroker);
+void APS5_VABI FT_Stroker_Done_nid_postfix(FT_StrokerRec_* stroker);
+void APS5_VABI FT_Stroker_Set_nid_postfix(FT_StrokerRec_* stroker, std::int64_t radius, std::int32_t cap, std::int32_t join, std::int64_t miterLimit);
+void APS5_VABI FT_Stroker_Rewind_nid_postfix(FT_StrokerRec_* stroker);
+int APS5_VABI FT_Stroker_BeginSubPath_nid_postfix(FT_StrokerRec_* stroker, FreeType::GuestVector* to, std::uint8_t open);
+int APS5_VABI FT_Stroker_EndSubPath_nid_postfix(FT_StrokerRec_* stroker);
+int APS5_VABI FT_Stroker_LineTo_nid_postfix(FT_StrokerRec_* stroker, FreeType::GuestVector* to);
+int APS5_VABI FT_Stroker_ConicTo_nid_postfix(FT_StrokerRec_* stroker, FreeType::GuestVector* control, FreeType::GuestVector* to);
+int APS5_VABI FT_Stroker_CubicTo_nid_postfix(FT_StrokerRec_* stroker, FreeType::GuestVector* control1, FreeType::GuestVector* control2, FreeType::GuestVector* to);
+int APS5_VABI FT_Stroker_GetCounts_nid_postfix(FT_StrokerRec_* stroker, std::uint32_t* points, std::uint32_t* contours);
 
 }

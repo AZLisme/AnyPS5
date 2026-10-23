@@ -8,6 +8,7 @@ add_library(libSceFreeType SHARED EXCLUDE_FROM_ALL
         src/Names.cpp
         src/Trigonometry.cpp
         src/OutlineDecompose.cpp
+        src/Stroker.cpp
 )
 target_include_directories(libSceFreeType PRIVATE ${LIBS_INCLUDE_DIR})
 target_link_libraries(libSceFreeType PRIVATE freetype)
@@ -111,6 +112,19 @@ if(BUILD_TESTING)
     set_tests_properties(guest_freetype_list PROPERTIES TIMEOUT 20)
     if(WIN32)
         set_tests_properties(guest_freetype_list PROPERTIES ENVIRONMENT_MODIFICATION
+            "PATH=path_list_prepend:$<TARGET_FILE_DIR:libSceFreeType>")
+    endif()
+endif()
+
+if(BUILD_TESTING)
+    add_test_executable(guest_freetype_stroker_tests ${LIBS_INCLUDE_DIR}/tests/GuestFreeTypeStroker.cpp)
+    target_include_directories(guest_freetype_stroker_tests PRIVATE ${LIBS_INCLUDE_DIR})
+    target_link_libraries(guest_freetype_stroker_tests PRIVATE libSceFreeType freetype libc)
+    configure_windows_unwind(guest_freetype_stroker_tests)
+    add_test(NAME guest_freetype_stroker COMMAND guest_freetype_stroker_tests)
+    set_tests_properties(guest_freetype_stroker PROPERTIES TIMEOUT 30)
+    if(WIN32)
+        set_tests_properties(guest_freetype_stroker PROPERTIES ENVIRONMENT_MODIFICATION
             "PATH=path_list_prepend:$<TARGET_FILE_DIR:libSceFreeType>")
     endif()
 endif()
