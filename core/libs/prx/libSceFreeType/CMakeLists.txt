@@ -5,6 +5,7 @@ add_library(libSceFreeType SHARED EXCLUDE_FROM_ALL
         src/FaceInfo.cpp
         src/GuestObjects.cpp
         src/Names.cpp
+        src/Polar.cpp
 )
 target_include_directories(libSceFreeType PRIVATE ${LIBS_INCLUDE_DIR})
 target_link_libraries(libSceFreeType PRIVATE freetype)
@@ -98,6 +99,19 @@ if(BUILD_TESTING)
     set_tests_properties(guest_freetype_list PROPERTIES TIMEOUT 20)
     if(WIN32)
         set_tests_properties(guest_freetype_list PROPERTIES ENVIRONMENT_MODIFICATION
+            "PATH=path_list_prepend:$<TARGET_FILE_DIR:libSceFreeType>")
+    endif()
+endif()
+
+if(BUILD_TESTING)
+    add_test_executable(guest_freetype_polar_tests ${LIBS_INCLUDE_DIR}/tests/GuestFreeTypePolar.cpp)
+    target_include_directories(guest_freetype_polar_tests PRIVATE ${LIBS_INCLUDE_DIR})
+    target_link_libraries(guest_freetype_polar_tests PRIVATE libSceFreeType freetype libc)
+    configure_windows_unwind(guest_freetype_polar_tests)
+    add_test(NAME guest_freetype_polar COMMAND guest_freetype_polar_tests)
+    set_tests_properties(guest_freetype_polar PROPERTIES TIMEOUT 30)
+    if(WIN32)
+        set_tests_properties(guest_freetype_polar PROPERTIES ENVIRONMENT_MODIFICATION
             "PATH=path_list_prepend:$<TARGET_FILE_DIR:libSceFreeType>")
     endif()
 endif()
