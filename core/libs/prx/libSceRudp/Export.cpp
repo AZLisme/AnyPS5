@@ -446,9 +446,11 @@ int APS5_VABI sceRudpPollWait(int pollId, RudpPollEvent* events, std::size_t eve
     if (pollId < 0 || events == nullptr || eventLen == 0) {
         return RUDP_ERROR_INVALID_ARGUMENT;
     }
-    if (g_polls.count(pollId) == 0) {
+    const auto poll = g_polls.find(pollId);
+    if (poll == g_polls.end()) {
         return RUDP_ERROR_INVALID_POLL_ID;
     }
+    if (poll->second.entries.empty()) return 0;
     const auto closed = [pollId] { return !g_inited || g_polls.count(pollId) == 0; };
     if (timeout > RUDP_POLL_WAIT_MAX_USEC) {
         g_polls_changed.wait(lk, closed);

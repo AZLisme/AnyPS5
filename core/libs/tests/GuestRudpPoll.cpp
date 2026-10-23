@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
+#include <future>
 #include <limits>
 #include <thread>
 
@@ -30,6 +31,18 @@ static void Require(bool value) {
 }
 
 static void APS5_VABI Handler(int, int, int, void*) {}
+
+static void RequireEmptyPoll(int poll, std::uint64_t timeout) {
+    GuestRudpPollEvent event{0x12345678, 0x1234, 0x5678};
+    std::promise<int> result;
+    auto completed = result.get_future();
+    std::thread waiter([&] { result.set_value(sceRudpPollWait(poll, &event, 1, timeout)); });
+    const bool ready = completed.wait_for(std::chrono::seconds(2)) == std::future_status::ready;
+    if (!ready) sceRudpPollDestroy(poll);
+    waiter.join();
+    Require(ready && completed.get() == 0);
+    Require(event.ctxId == 0x12345678 && event.reqEvents == 0x1234 && event.rtnEvents == 0x5678);
+}
 
 int main() {
     constexpr int notInitialized = static_cast<int>(0x80770001u);
@@ -58,6 +71,11 @@ int main() {
     Require(poll > 0);
     const int other = sceRudpPollCreate(2);
     Require(other > 0 && other != poll);
+    RequireEmptyPoll(poll, 0);
+    RequireEmptyPoll(poll, 5000000);
+    RequireEmptyPoll(poll, forever);
+    Require(sceRudpPollWait(poll, nullptr, eventCount, forever) == invalidArgument);
+    Require(sceRudpPollWait(poll, events.data(), 0, forever) == invalidArgument);
 
     int first = -1;
     int second = -1;
@@ -81,6 +99,7 @@ int main() {
     Require(sceRudpPollControl(poll, modify, first, read | write) == 0);
     Require(sceRudpPollControl(poll, remove, first, 0) == 0);
     Require(sceRudpPollControl(poll, remove, first, 0) == invalidContext);
+    RequireEmptyPoll(poll, forever);
     Require(sceRudpPollControl(poll, add, second, write) == 0);
 
     Require(sceRudpPollWait(-1, events.data(), eventCount, 0) == invalidArgument);
@@ -93,12 +112,19 @@ int main() {
     Require(std::chrono::steady_clock::now() - start >= std::chrono::milliseconds(20));
 
     Require(sceRudpTerminate(second) == 0);
+    RequireEmptyPoll(poll, forever);
     Require(sceRudpPollControl(poll, add, first, read) == 0);
     Require(sceRudpTerminate(first) == 0);
+    RequireEmptyPoll(poll, forever);
+    RequireEmptyPoll(other, forever);
     Require(sceRudpPollControl(poll, add, first, read) == invalidContext);
     int third = -1;
     Require(sceRudpCreateContext(Handler, nullptr, &third) == 0);
     Require(sceRudpPollControl(poll, add, third, read) == 0);
+    Require(sceRudpPollControl(other, add, third, read) == 0);
+    std::thread remover([&] { Require(sceRudpPollControl(other, remove, third, 0) == 0); });
+    remover.join();
+    RequireEmptyPoll(other, forever);
     Require(sceRudpPollControl(other, add, third, read) == 0);
 
     int destroyedResult = 0;
