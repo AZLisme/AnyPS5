@@ -1,4 +1,4 @@
-add_library(libSceIcu SHARED EXCLUDE_FROM_ALL Export.cpp Invariant.cpp Version.cpp Unescape.cpp)
+add_library(libSceIcu SHARED EXCLUDE_FROM_ALL Export.cpp Invariant.cpp Version.cpp Unescape.cpp UtfConversions.cpp)
 target_include_directories(libSceIcu PRIVATE ${LIBS_INCLUDE_DIR})
 configure_windows_unwind(libSceIcu)
 
@@ -24,6 +24,19 @@ if(BUILD_TESTING)
     set_tests_properties(guest_icu_unescape PROPERTIES TIMEOUT 30)
     if(WIN32)
         set_tests_properties(guest_icu_unescape PROPERTIES ENVIRONMENT_MODIFICATION
+            "PATH=path_list_prepend:$<TARGET_FILE_DIR:libSceIcu>")
+    endif()
+endif()
+
+if(BUILD_TESTING)
+    add_test_executable(guest_icu_utf_conversions_tests ${LIBS_INCLUDE_DIR}/tests/GuestIcuUtfConversions.cpp)
+    target_include_directories(guest_icu_utf_conversions_tests PRIVATE ${LIBS_INCLUDE_DIR})
+    target_link_libraries(guest_icu_utf_conversions_tests PRIVATE libSceIcu libc)
+    configure_windows_unwind(guest_icu_utf_conversions_tests)
+    add_test(NAME guest_icu_utf_conversions COMMAND guest_icu_utf_conversions_tests)
+    set_tests_properties(guest_icu_utf_conversions PROPERTIES TIMEOUT 10)
+    if(WIN32)
+        set_tests_properties(guest_icu_utf_conversions PROPERTIES ENVIRONMENT_MODIFICATION
             "PATH=path_list_prepend:$<TARGET_FILE_DIR:libSceIcu>")
     endif()
 endif()
