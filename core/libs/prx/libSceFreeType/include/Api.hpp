@@ -63,4 +63,10 @@ std::int64_t APS5_VABI FT_Tan_nid_postfix(std::int64_t angle);
 void APS5_VABI FT_Vector_Unit_nid_postfix(FreeType::GuestVector* vector, std::int64_t angle);
 std::int64_t APS5_VABI FT_Angle_Diff_nid_postfix(std::int64_t first, std::int64_t second);
 
+std::int64_t APS5_VABI FT_Atan2_nid_postfix(std::int64_t x, std::int64_t y);
+void APS5_VABI FT_Vector_Rotate_nid_postfix(FreeType::GuestVector* vector, std::int64_t angle);
+std::int64_t APS5_VABI FT_Vector_Length_nid_postfix(FreeType::GuestVector* vector);
+void APS5_VABI FT_Vector_Polarize_nid_postfix(FreeType::GuestVector* vector, std::int64_t* length, std::int64_t* angle);
+void APS5_VABI FT_Vector_From_Polar_nid_postfix(FreeType::GuestVector* vector, std::int64_t length, std::int64_t angle);
+
 }
