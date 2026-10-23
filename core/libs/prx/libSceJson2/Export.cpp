@@ -723,6 +723,28 @@ String* APS5_VABI _ZNK3sce4Json6String6substrEmm(String* result, const String* s
     Construct(*result, self->text->substr(position, length));
     return result;
 }
+std::size_t APS5_VABI _ZNK3sce4Json6String4findEPKcm(const String* self, const char* text, std::size_t position) {
+    if (!text) NotImplemented_nid_no_patch(__func__);
+    return self->text->find(text, position);
+}
+std::size_t APS5_VABI _ZNK3sce4Json6String4findEPKcmm(const String* self, const char* text, std::size_t position, std::size_t length) {
+    if (!text) NotImplemented_nid_no_patch(__func__);
+    return self->text->find(text, position, length);
+}
+std::size_t APS5_VABI _ZNK3sce4Json6String4findERKS1_m(const String* self, const String* other, std::size_t position) {
+    return self->text->find(*other->text, position);
+}
+std::size_t APS5_VABI _ZNK3sce4Json6String5rfindEPKcm(const String* self, const char* text, std::size_t position) {
+    if (!text) NotImplemented_nid_no_patch(__func__);
+    return self->text->rfind(text, position);
+}
+std::size_t APS5_VABI _ZNK3sce4Json6String5rfindEPKcmm(const String* self, const char* text, std::size_t position, std::size_t length) {
+    if (!text) NotImplemented_nid_no_patch(__func__);
+    return self->text->rfind(text, position, length);
+}
+std::size_t APS5_VABI _ZNK3sce4Json6String5rfindERKS1_m(const String* self, const String* other, std::size_t position) {
+    return self->text->rfind(*other->text, position);
+}
 std::size_t APS5_VABI _ZNK3sce4Json6String4findEcm(const String* self, char character, std::size_t position) { return self->text->find(character, position); }
 std::size_t APS5_VABI _ZNK3sce4Json6String5rfindEcm(const String* self, char character, std::size_t position) { return self->text->rfind(character, position); }
 int APS5_VABI _ZNK3sce4Json6String7compareEPKc(const String* self, const char* text) {
