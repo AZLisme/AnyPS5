@@ -14,6 +14,8 @@
 #include <limits>
 #include <stdexcept>
 #include "prx/libc/include/General.hpp"
+#include "HevcMetadata.hpp"
+#include "prx/libc/include/GuestArena.hpp"
 
 extern "C" {
 #include <libavcodec/avcodec.h>
@@ -23,6 +25,8 @@ extern "C" {
 }
 
 namespace {
+
+struct UnsupportedHevcMetadata {};
 
 constexpr std::uint64_t WorkMemoryBytes = 1u << 20u;
 constexpr std::uint32_t PitchAlignment = 256;
@@ -285,6 +289,7 @@ struct Picture {
     Crop crop{};
     bool hevcIdr = false;
     std::uint8_t bitDepthMinus8 = 0;
+    Videodec2Hevc::Metadata hevc;
 };
 
 struct PictureHeader {
@@ -326,6 +331,7 @@ struct Decoder {
     bool flushing = false;
     std::array<Vp9PictureInfo, 8> vp9References{};
     Vp9PictureInfo vp9Colors{};
+    Videodec2Hevc::State hevc;
 
     ~Decoder() {
         sws_freeContext(scaler);
@@ -643,6 +649,7 @@ int APS5_VABI sceVideodec2Decode_nid_postfix(std::uint64_t handle, const InputDa
     const Picture picture{input->ptsData, input->dtsData, input->attachedData};
     if (decoder.flushing) {
         avcodec_flush_buffers(decoder.context);
+        decoder.hevc.afterEnd = true;
         decoder.flushing = false;
     }
     if (input->auSize > static_cast<std::uint64_t>(std::numeric_limits<int>::max())) throw std::runtime_error("Videodec2: invalid access unit");
@@ -691,6 +698,12 @@ int APS5_VABI sceVideodec2Decode_nid_postfix(std::uint64_t handle, const InputDa
     packet->pts = decoder.nextKey;
     auto tagged = picture;
     tagged.hevcIdr = decoder.codec == CodecHevc && StartsHevcIdr(*unit);
+    if (decoder.codec == CodecHevc) {
+        tagged.hevc = Videodec2Hevc::Parse_nid_no_patch(decoder.hevc, *unit);
+        tagged.hevc.info.ptsData = picture.pts;
+        tagged.hevc.info.dtsData = picture.dts;
+        tagged.hevc.info.attachedData = picture.attached;
+    }
     decoder.inputs.emplace(decoder.nextKey++, tagged);
     Send(decoder, packet);
     EmitDecoded(handle, decoder, frame, output);
@@ -724,6 +737,7 @@ int APS5_VABI sceVideodec2Reset_nid_postfix(std::uint64_t handle) {
         std::erase_if(pictureOwners, [handle](const auto& owner) { return owner.second == handle; });
     }
     avcodec_flush_buffers(decoder.context);
+    decoder.hevc.afterEnd = true;
     decoder.ready.clear();
     decoder.inputs.clear();
     decoder.parameterSets.clear();
@@ -731,9 +745,11 @@ int APS5_VABI sceVideodec2Reset_nid_postfix(std::uint64_t handle) {
     return 0;
 }
 
-int APS5_VABI sceVideodec2GetPictureInfo_nid_postfix(const OutputInfo* output, AvcPictureInfo* first, void* second) {
+static int GetPictureInfo(const OutputInfo* output, AvcPictureInfo* first, void* second, bool allowHevc) {
     (void)second;
     if (!output || !first) throw std::runtime_error("Videodec2: invalid argument pointer");
+    if (output->codecType == CodecHevc && (!Fits(output, offsetof(OutputInfo, frameBuffer) + sizeof(output->frameBuffer)) || !Fits(first, sizeof(Videodec2Hevc::PictureInfo))))
+        throw std::runtime_error("Videodec2: HEVC picture structure is too small");
     const auto owner = [output]() -> std::uint64_t {
         std::lock_guard guard(lock);
         const auto found = pictureOwners.find(output->frameBuffer);
@@ -754,7 +770,17 @@ int APS5_VABI sceVideodec2GetPictureInfo_nid_postfix(const OutputInfo* output, A
             info->thisSize = size;
             return 0;
         }
-        if (decoder->codec != CodecAvc) throw std::runtime_error("Videodec2: picture info is only implemented for H.264 and VP9");
+        if (decoder->codec == CodecHevc) {
+            if (!allowHevc) throw UnsupportedHevcMetadata{};
+            auto* info = reinterpret_cast<Videodec2Hevc::PictureInfo*>(first);
+            if (!Fits(info, sizeof(*info))) throw std::runtime_error("Videodec2: HEVC picture structure is too small");
+            if (!found->second.hevc.unsupported.empty()) throw UnsupportedHevcMetadata{};
+            const auto size = info->thisSize;
+            GuestArena::HostWrite access(info, sizeof(*info));
+            *info = found->second.hevc.info;
+            info->thisSize = size;
+            return 0;
+        }
         const auto& picture = found->second;
         first->isValid = true;
         first->ptsData = picture.pts;
@@ -769,12 +795,51 @@ int APS5_VABI sceVideodec2GetPictureInfo_nid_postfix(const OutputInfo* output, A
         }
         return 0;
     }
-    first->isValid = false;
+    if (output->codecType == CodecHevc) {
+        GuestArena::HostWrite access(&first->isValid, sizeof(first->isValid));
+        first->isValid = false;
+    } else first->isValid = false;
     return 0;
 }
 
+int APS5_VABI sceVideodec2GetPictureInfo_nid_postfix(const OutputInfo* output, AvcPictureInfo* first, void* second) {
+    try { return GetPictureInfo(output, first, second, true); }
+    catch (const UnsupportedHevcMetadata&) { NotImplemented_nid_no_patch(__func__); }
+}
+
 int APS5_VABI sceVideodec2GetAvcPictureInfo_nid_postfix(const OutputInfo* output, AvcPictureInfo* first, AvcPictureInfo* second) {
-    return sceVideodec2GetPictureInfo_nid_postfix(output, first, second);
+    try { return GetPictureInfo(output, first, second, false); }
+    catch (const UnsupportedHevcMetadata&) { NotImplemented_nid_no_patch(__func__); }
+}
+
+int APS5_VABI sceVideodec2GetHevcPictureInfo_nid_postfix(const OutputInfo* output, Videodec2Hevc::PictureInfo* info) {
+    if (!output || !info) throw std::runtime_error("Videodec2: invalid HEVC picture argument");
+    if (!Fits(output, offsetof(OutputInfo, frameBuffer) + sizeof(output->frameBuffer)) || !Fits(info, sizeof(*info)))
+        throw std::runtime_error("Videodec2: HEVC picture structure is too small");
+    if (output->codecType != CodecHevc) throw std::runtime_error("Videodec2: HEVC info requested for another codec");
+    const auto owner = [output]() -> std::uint64_t {
+        std::lock_guard guard(lock);
+        const auto found = pictureOwners.find(output->frameBuffer);
+        return found != pictureOwners.end() ? found->second : 0;
+    };
+    for (auto handle = owner(); handle != 0; handle = owner()) {
+        const auto decoder = FindDecoder(handle);
+        if (!decoder) continue;
+        std::lock_guard guard(decoder->mutex);
+        if (owner() != handle) continue;
+        if (decoder->codec != CodecHevc) throw std::runtime_error("Videodec2: HEVC info requested for another codec");
+        const auto found = decoder->pictures.find(output->frameBuffer);
+        if (found == decoder->pictures.end()) throw std::runtime_error("Videodec2: owned HEVC picture is missing");
+        if (!found->second.hevc.unsupported.empty()) NotImplemented_nid_no_patch(__func__);
+        const auto size = info->thisSize;
+        GuestArena::HostWrite access(info, sizeof(*info));
+        *info = found->second.hevc.info;
+        info->thisSize = size;
+        return 0;
+    }
+    GuestArena::HostWrite access(&info->isValid, sizeof(info->isValid));
+    info->isValid = false;
+    return 0;
 }
 
 int APS5_VABI sceVideodec2GetVp9PictureInfo_nid_postfix(const OutputInfo* output, Vp9PictureInfo* info) {
