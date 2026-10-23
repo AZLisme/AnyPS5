@@ -723,6 +723,10 @@ String* APS5_VABI _ZNK3sce4Json6String6substrEmm(String* result, const String* s
     Construct(*result, self->text->substr(position, length));
     return result;
 }
+char APS5_VABI _ZNK3sce4Json6String2atEm(const String* self, std::size_t position) {
+    if (!self || !self->text || position >= self->text->size()) NotImplemented_nid_no_patch(__func__);
+    return (*self->text)[position];
+}
 std::size_t APS5_VABI _ZNK3sce4Json6String4findEcm(const String* self, char character, std::size_t position) { return self->text->find(character, position); }
 std::size_t APS5_VABI _ZNK3sce4Json6String5rfindEcm(const String* self, char character, std::size_t position) { return self->text->rfind(character, position); }
 int APS5_VABI _ZNK3sce4Json6String7compareEPKc(const String* self, const char* text) {

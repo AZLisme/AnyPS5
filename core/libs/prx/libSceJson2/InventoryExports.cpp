@@ -407,12 +407,6 @@ int APS5_VABI sceJson2Unknown_067_nid_no_patch() {
 }
 APS5_EXPORT("_ZNK3sce4Json5ValueixERKNS0_6StringE", sceJson2Unknown_067_nid_no_patch);
 
-int APS5_VABI sceJson2Unknown_068_nid_no_patch() {
-    NotImplemented_nid_no_patch(__func__);
-    return 0;
-}
-APS5_EXPORT("_ZNK3sce4Json6String2atEm", sceJson2Unknown_068_nid_no_patch);
-
 int APS5_VABI sceJson2Unknown_069_nid_no_patch() {
     NotImplemented_nid_no_patch(__func__);
     return 0;
