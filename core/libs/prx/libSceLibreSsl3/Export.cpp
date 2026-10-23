@@ -6,17 +6,7 @@
 extern "C" {
 
 APS5_DUMMY_FUN
-int APS5_VABI ASN1_INTEGER_free_nid_postfix(void) {
-    NotImplemented_nid_no_patch(__func__);
-    return 0;
-}
-
 int APS5_VABI ASN1_OBJECT_free_nid_postfix(void) {
-    NotImplemented_nid_no_patch(__func__);
-    return 0;
-}
-
-int APS5_VABI ASN1_STRING_get0_data_nid_postfix(void) {
     NotImplemented_nid_no_patch(__func__);
     return 0;
 }
@@ -391,11 +381,6 @@ int APS5_VABI X509_getm_notBefore_nid_postfix(void) {
 }
 
 int APS5_VABI X509_up_ref_nid_postfix(void) {
-    NotImplemented_nid_no_patch(__func__);
-    return 0;
-}
-
-int APS5_VABI d2i_ASN1_INTEGER_nid_postfix(void) {
     NotImplemented_nid_no_patch(__func__);
     return 0;
 }
