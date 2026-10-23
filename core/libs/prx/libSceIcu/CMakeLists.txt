@@ -1,0 +1,16 @@
+add_library(libSceIcu SHARED EXCLUDE_FROM_ALL Export.cpp Numerical.cpp)
+target_include_directories(libSceIcu PRIVATE ${LIBS_INCLUDE_DIR})
+configure_windows_unwind(libSceIcu)
+
+if(BUILD_TESTING)
+    add_test_executable(guest_icu_numerical_tests ${LIBS_INCLUDE_DIR}/tests/GuestIcuNumerical.cpp)
+    target_include_directories(guest_icu_numerical_tests PRIVATE ${LIBS_INCLUDE_DIR})
+    target_link_libraries(guest_icu_numerical_tests PRIVATE libSceIcu libc)
+    configure_windows_unwind(guest_icu_numerical_tests)
+    add_test(NAME guest_icu_numerical COMMAND guest_icu_numerical_tests)
+    set_tests_properties(guest_icu_numerical PROPERTIES TIMEOUT 10)
+    if(WIN32)
+        set_tests_properties(guest_icu_numerical PROPERTIES ENVIRONMENT_MODIFICATION
+            "PATH=path_list_prepend:$<TARGET_FILE_DIR:libSceIcu>")
+    endif()
+endif()
