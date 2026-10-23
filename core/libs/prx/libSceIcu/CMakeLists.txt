@@ -1,0 +1,16 @@
+add_library(libSceIcu SHARED EXCLUDE_FROM_ALL ${CMAKE_CURRENT_SOURCE_DIR}/Export.cpp ${CMAKE_CURRENT_SOURCE_DIR}/Invariant.cpp)
+target_include_directories(libSceIcu PRIVATE ${LIBS_INCLUDE_DIR})
+configure_windows_unwind(libSceIcu)
+
+if(BUILD_TESTING)
+    add_test_executable(guest_icu_invariant_tests ${CMAKE_CURRENT_SOURCE_DIR}/tests/Invariant.cpp)
+    target_include_directories(guest_icu_invariant_tests PRIVATE ${LIBS_INCLUDE_DIR})
+    target_link_libraries(guest_icu_invariant_tests PRIVATE libSceIcu)
+    configure_windows_unwind(guest_icu_invariant_tests)
+    add_test(NAME guest_icu_invariant COMMAND guest_icu_invariant_tests)
+    set_tests_properties(guest_icu_invariant PROPERTIES TIMEOUT 10)
+    if(WIN32)
+        set_tests_properties(guest_icu_invariant PROPERTIES ENVIRONMENT_MODIFICATION
+            "PATH=path_list_prepend:$<TARGET_FILE_DIR:libSceIcu>")
+    endif()
+endif()
