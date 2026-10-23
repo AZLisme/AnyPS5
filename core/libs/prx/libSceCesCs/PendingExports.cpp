@@ -158,11 +158,6 @@ int APS5_VABI sceCesRefersUcsProfileCp869(void) {
     return 0;
 }
 
-int APS5_VABI sceCesRefersUcsProfileCp874(void) {
-    NotImplemented_nid_no_patch(__func__);
-    return 0;
-}
-
 int APS5_VABI sceCesRefersUcsProfileGbT1988(void) {
     NotImplemented_nid_no_patch(__func__);
     return 0;

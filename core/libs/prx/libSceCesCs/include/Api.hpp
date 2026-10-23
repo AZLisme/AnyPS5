@@ -238,7 +238,7 @@ int APS5_VABI sceCesRefersUcsProfileCp857(void);
 int APS5_VABI sceCesRefersUcsProfileCp858(void);
 int APS5_VABI sceCesRefersUcsProfileCp864(void);
 int APS5_VABI sceCesRefersUcsProfileCp869(void);
-int APS5_VABI sceCesRefersUcsProfileCp874(void);
+const uint8_t* APS5_VABI sceCesRefersUcsProfileCp874(void);
 int APS5_VABI sceCesRefersUcsProfileGbT1988(void);
 int APS5_VABI sceCesRefersUcsProfileGbT1988Tilde0x7e(void);
 int APS5_VABI sceCesRefersUcsProfileIso8859_11(void);
