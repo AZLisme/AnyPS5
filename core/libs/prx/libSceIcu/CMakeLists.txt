@@ -1,0 +1,17 @@
+add_library(libSceIcu SHARED EXCLUDE_FROM_ALL Export.cpp Enumeration.cpp)
+target_include_directories(libSceIcu PRIVATE ${LIBS_INCLUDE_DIR})
+target_link_libraries(libSceIcu PRIVATE libc)
+configure_windows_unwind(libSceIcu)
+
+if(BUILD_TESTING)
+    add_test_executable(guest_icu_enumeration_tests ${LIBS_INCLUDE_DIR}/tests/GuestIcuEnumeration.cpp)
+    target_include_directories(guest_icu_enumeration_tests PRIVATE ${LIBS_INCLUDE_DIR})
+    target_link_libraries(guest_icu_enumeration_tests PRIVATE libSceIcu libc)
+    configure_windows_unwind(guest_icu_enumeration_tests)
+    add_test(NAME guest_icu_enumeration COMMAND guest_icu_enumeration_tests)
+    set_tests_properties(guest_icu_enumeration PROPERTIES TIMEOUT 10)
+    if(WIN32)
+        set_tests_properties(guest_icu_enumeration PROPERTIES ENVIRONMENT_MODIFICATION
+            "PATH=path_list_prepend:$<TARGET_FILE_DIR:libSceIcu>")
+    endif()
+endif()

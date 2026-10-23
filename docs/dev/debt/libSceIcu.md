@@ -1,0 +1,9 @@
+# libSceIcu technical debt
+
+### Functional
+
+- [Enumeration ABI](../../../core/libs/prx/libSceIcu/Enumeration.hpp): the PS5 ICU version and exact console equivalence remain unverified. The nine APIs follow ICU 78.1 [uenum.cpp](https://github.com/unicode-org/icu/blob/049e0d6a420629ac7db77256987d083a563287b5/icu4c/source/common/uenum.cpp), `uenumimp.h` and `ustrenum.cpp`: a 56-byte callback prefix, a 64-byte array enumerator and guest System V callbacks. Array pointers and strings remain borrowed until close. C++ `uenum_openFromStringEnumeration` remains unimplemented because the guest C++ object ABI is unknown.
+
+- [Enumeration invariant conversions](../../../core/libs/prx/libSceIcu/Enumeration.cpp): exact PS5 conversion and allocation-failure behavior remain unverified. Private default converters follow the pinned release implementation, not UTF-8 conversion. Narrowing replaces noninvariant UTF-16 units with NUL and preserves status, despite the public header describing an invariant-conversion error. Failed conversion-buffer growth retains the reference's loss of the old base pointer. Null required pointers and callback lengths whose padded allocation cannot fit signed 32 bits throw where the reference dereferences invalid input or overflows; other invalid custom callback objects remain caller errors.
+
+- [ICU allocation callbacks](../../../core/libs/prx/libSceIcu/Memory.hpp): console allocator interoperability remains unverified. Enumeration objects and conversion buffers use the same internal callback state as ICU memory exports; default allocation forwards to the guest libc allocator. Custom callback objects and their base buffers must use the configured matching allocator, as the reference requires. Changing allocator callbacks while objects remain live has the same invalid ownership consequences as ICU.
