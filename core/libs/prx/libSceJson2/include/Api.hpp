@@ -75,6 +75,8 @@ namespace SceJson2 {
 struct ArrayIteratorState {
     std::list<Value>::iterator position;
     std::list<Value>::iterator end;
+    std::list<Value>* owner = nullptr;
+    Value* current = nullptr;
 };
 
 }
@@ -238,6 +240,9 @@ void APS5_VABI _ZN3sce4Json5ArrayC1ERKS1_(SceJson2::Array* self, const SceJson2:
 void APS5_VABI _ZN3sce4Json5ArrayD1Ev(SceJson2::Array* self);
 SceJson2::Array* APS5_VABI _ZN3sce4Json5ArrayaSERKS1_(SceJson2::Array* self, const SceJson2::Array* other);
 void APS5_VABI _ZN3sce4Json5Array9push_backERKNS0_5ValueE(SceJson2::Array* self, const SceJson2::Value* value);
+void APS5_VABI _ZN3sce4Json5Array8pop_backEv(SceJson2::Array* self);
+SceJson2::ArrayIterator* APS5_VABI _ZN3sce4Json5Array6insertERKNS1_8iteratorERKNS0_5ValueE(SceJson2::ArrayIterator* result, SceJson2::Array* self, const SceJson2::ArrayIterator* where, const SceJson2::Value* value);
+SceJson2::ArrayIterator* APS5_VABI _ZN3sce4Json5Array5eraseERKNS1_8iteratorE(SceJson2::ArrayIterator* result, SceJson2::Array* self, const SceJson2::ArrayIterator* where);
 SceJson2::ArrayIterator* APS5_VABI _ZNK3sce4Json5Array5beginEv(SceJson2::ArrayIterator* result, const SceJson2::Array* self);
 SceJson2::ArrayIterator* APS5_VABI _ZNK3sce4Json5Array3endEv(SceJson2::ArrayIterator* result, const SceJson2::Array* self);
 bool APS5_VABI _ZNK3sce4Json5Array5emptyEv(const SceJson2::Array* self);

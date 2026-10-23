@@ -157,7 +157,7 @@ static unsigned CheckFailures(const char* name, TOperation operation) {
 }
 
 enum class Operation {
-    ValueCopy, ArrayCopy, ObjectCopy, ValueAssign, ObjectAssign, ArrayAppend,
+    ValueCopy, ArrayCopy, ObjectCopy, ValueAssign, ObjectAssign, ArrayAppend, ArrayAssign, ArrayInsert, ArrayErase,
     ValueArray, ValueObject, ValueString, ValueText, ValueTypeString, ValueTypeArray,
     ValueTypeObject, SetArray, SetObject, SetTypeArray, SetTypeObject, SetTypeString, PairCopy
 };
@@ -167,6 +167,8 @@ static bool Run(Operation operation, const Value& source, const char* expected, 
     Array arrayResult{};
     Object objectResult{};
     Pair pair{};
+    ArrayIterator position{}, returned{};
+    bool positionReady = false;
     bool valueReady = false, arrayReady = false, objectReady = false, pairReady = false;
     const bool typeSetter = operation == Operation::SetTypeArray || operation == Operation::SetTypeObject || operation == Operation::SetTypeString;
     if (operation == Operation::ValueAssign || operation == Operation::SetArray || operation == Operation::SetObject || typeSetter) {
@@ -175,6 +177,25 @@ static bool Run(Operation operation, const Value& source, const char* expected, 
         valueReady = true;
     }
     if (operation == Operation::ArrayAppend) { _ZN3sce4Json5ArrayC1Ev(&arrayResult); arrayReady = true; }
+    if (operation == Operation::ArrayAssign || operation == Operation::ArrayInsert) {
+        _ZN3sce4Json5ArrayC1Ev(&arrayResult);
+        arrayReady = true;
+        if (operation == Operation::ArrayAssign) {
+            Value previous{};
+            _ZN3sce4Json5ValueC1EPKc(&previous, "previous");
+            _ZN3sce4Json5Array9push_backERKNS0_5ValueE(&arrayResult, &previous);
+            _ZN3sce4Json5ValueD1Ev(&previous);
+        } else {
+            _ZNK3sce4Json5Array3endEv(&position, &arrayResult);
+            positionReady = true;
+        }
+    }
+    if (operation == Operation::ArrayErase) {
+        _ZN3sce4Json5ArrayC1ERKS1_(&arrayResult, &array);
+        arrayReady = true;
+        _ZNK3sce4Json5Array5beginEv(&position, &arrayResult);
+        positionReady = true;
+    }
     if (operation == Operation::ObjectAssign) { _ZN3sce4Json6ObjectC1Ev(&objectResult); objectReady = true; }
     bool succeeded = false;
     allocationBudget = activeBudget;
@@ -186,6 +207,9 @@ static bool Run(Operation operation, const Value& source, const char* expected, 
             case Operation::ValueAssign: _ZN3sce4Json5ValueaSERKS1_(&result, &source); break;
             case Operation::ObjectAssign: _ZN3sce4Json6ObjectaSERKS1_(&objectResult, &object); break;
             case Operation::ArrayAppend: _ZN3sce4Json5Array9push_backERKNS0_5ValueE(&arrayResult, &source); break;
+            case Operation::ArrayAssign: _ZN3sce4Json5ArrayaSERKS1_(&arrayResult, &array); break;
+            case Operation::ArrayInsert: _ZN3sce4Json5Array6insertERKNS1_8iteratorERKNS0_5ValueE(&returned, &arrayResult, &position, &source); break;
+            case Operation::ArrayErase: _ZN3sce4Json5Array5eraseERKNS1_8iteratorE(&returned, &arrayResult, &position); break;
             case Operation::ValueArray: _ZN3sce4Json5ValueC1ERKNS0_5ArrayE(&result, &array); valueReady = true; break;
             case Operation::ValueObject: _ZN3sce4Json5ValueC1ERKNS0_6ObjectE(&result, &object); valueReady = true; break;
             case Operation::ValueString: _ZN3sce4Json5ValueC1ERKNS0_6StringE(&result, &text); valueReady = true; break;
@@ -215,11 +239,16 @@ static bool Run(Operation operation, const Value& source, const char* expected, 
     }
     if (arrayReady) {
         const auto count = _ZNK3sce4Json5Array4sizeEv(&arrayResult);
-        Require(count == (succeeded ? (operation == Operation::ArrayAppend ? 1 : 3) : 0), "array contents changed");
-        if (succeeded && operation == Operation::ArrayAppend) CheckValue(*_ZNK3sce4Json5Array5frontEv(&arrayResult), expected);
+        const auto expectedCount = succeeded ? (operation == Operation::ArrayAppend || operation == Operation::ArrayInsert ? 1 : operation == Operation::ArrayErase ? 2 : 3) : operation == Operation::ArrayAssign ? 1 : operation == Operation::ArrayErase ? 3 : 0;
+        Require(count == static_cast<std::size_t>(expectedCount), "array contents changed");
+        if (!succeeded && operation == Operation::ArrayAssign) CheckValue(*_ZNK3sce4Json5Array5frontEv(&arrayResult), "\"previous\"");
+        if (!succeeded) Require(returned.state == nullptr, "failed mutation changed result iterator");
+        if (succeeded && (operation == Operation::ArrayAppend || operation == Operation::ArrayInsert)) CheckValue(*_ZNK3sce4Json5Array5frontEv(&arrayResult), expected);
         _ZN3sce4Json5ArrayD1Ev(&arrayResult);
 
     }
+    if (positionReady) _ZN3sce4Json5Array8iteratorD1Ev(&position);
+    if (returned.state) _ZN3sce4Json5Array8iteratorD1Ev(&returned);
     if (objectReady) {
         Require(_ZNK3sce4Json6Object4sizeEv(&objectResult) == (succeeded ? 2 : 0), "object contents changed");
         _ZN3sce4Json6ObjectD1Ev(&objectResult);
@@ -254,6 +283,9 @@ int main() {
         {"value assignment", Operation::ValueAssign, &objectValue, objectJson},
         {"object assignment", Operation::ObjectAssign, &objectValue, objectJson},
         {"array append", Operation::ArrayAppend, &objectValue, objectJson},
+        {"array assignment", Operation::ArrayAssign, &arrayValue, arrayJson},
+        {"array insertion", Operation::ArrayInsert, &objectValue, objectJson},
+        {"array erase", Operation::ArrayErase, &arrayValue, arrayJson},
         {"value from array", Operation::ValueArray, &arrayValue, arrayJson},
         {"value from object", Operation::ValueObject, &objectValue, objectJson},
         {"value from string", Operation::ValueString, &objectValue, stringJson},
@@ -308,6 +340,30 @@ int main() {
     };
     checkIterator.operator()<false>();
     checkIterator.operator()<true>();
+    for (bool atEnd : {false, true}) {
+        activeCase = atEnd ? "array end iterator assignment" : "array begin iterator assignment";
+        const auto before = liveAllocations;
+        ArrayIterator source{};
+        if (atEnd) _ZNK3sce4Json5Array3endEv(&source, array);
+        else _ZNK3sce4Json5Array5beginEv(&source, array);
+        for (activeBudget = 0; activeBudget <= 1; ++activeBudget) {
+            ArrayIterator destination{};
+            bool succeeded = false;
+            allocationBudget = activeBudget;
+            try {
+                Require(_ZN3sce4Json5Array8iteratoraSERKS2_(&destination, &source) == &destination, "iterator assignment return mismatch");
+                succeeded = true;
+            } catch (const std::bad_alloc&) {
+                ++failures;
+            }
+            allocationBudget = -1;
+            Require(succeeded == (activeBudget == 1), "iterator assignment allocation failure ignored");
+            Require(succeeded ? destination.state && destination.state != source.state : destination.state == nullptr, "iterator assignment changed destination on failure or aliased source");
+            _ZN3sce4Json5Array8iteratorD1Ev(&destination);
+        }
+        _ZN3sce4Json5Array8iteratorD1Ev(&source);
+        Require(liveAllocations == before, "iterator assignment leaked allocations");
+    }
     activeCase = "value swap";
     bool swapSucceeded = false;
     for (activeBudget = 0; activeBudget < 256 && !swapSucceeded; ++activeBudget) {
@@ -362,5 +418,5 @@ int main() {
 
     Require(liveAllocations == initial, "source cleanup leaked allocations");
     std::printf("JSON allocation cleanup: %zu operations, %u allocation failures, no leaks\n",
-                sizeof(cases) / sizeof(cases[0]) + sizeof(parseCases) / sizeof(parseCases[0]) + 5, failures);
+                sizeof(cases) / sizeof(cases[0]) + sizeof(parseCases) / sizeof(parseCases[0]) + 7, failures);
 }
