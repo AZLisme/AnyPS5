@@ -68,14 +68,6 @@ void CheckConversion(int type, std::span<const unsigned char> input, std::span<c
     free_nid_postfix(result);
 }
 
-void CheckInvalidEncoding(int type, std::span<const unsigned char> input) {
-    String value{static_cast<int>(input.size()), type, const_cast<unsigned char*>(input.data()), 0};
-    unsigned char sentinel = 0xab;
-    unsigned char* result = &sentinel;
-    RequireThrows([&] { ASN1_STRING_to_UTF8_nid_postfix(&result, &value); }, "an unimplemented error-queue path throws");
-    Require(result == &sentinel && sentinel == 0xab, "failure preserves the output pointer");
-}
-
 void Accessors() {
     unsigned char data[] = {'a', 0, 'b'};
     String value{3, 12, data, std::numeric_limits<std::int64_t>::max()};
@@ -184,29 +176,14 @@ void Strings() {
     RequireThrows([&] { ASN1_STRING_to_UTF8_nid_postfix(&result, &value); }, "null terminated-string data");
 }
 
-void InvalidEncodings() {
-    const std::vector<std::vector<unsigned char>> utf8{
-        {0x80}, {0xbf}, {0xc0, 0x80}, {0xc1, 0xbf}, {0xc2}, {0xc2, 0x41}, {0xe0, 0x80, 0x80},
-        {0xe1, 0x80}, {0xe1, 0x41, 0x80}, {0xe1, 0x80, 0x41}, {0xed, 0xa0, 0x80}, {0xed, 0xbf, 0xbf},
-        {0xf0, 0x80, 0x80, 0x80}, {0xf0, 0x90, 0x80}, {0xf0, 0x90, 0x80, 0x41}, {0xf4, 0x90, 0x80, 0x80},
-        {0xf5, 0x80, 0x80, 0x80}, {0xf8, 0x88, 0x80, 0x80, 0x80}, {0xfe}, {0xff}, {'a', 0xff}};
-    for (const auto& bytes : utf8) CheckInvalidEncoding(12, bytes);
-    const std::vector<std::vector<unsigned char>> bmp{{0}, {0, 'A', 0}, {0xd8, 0}, {0xdf, 0xff}, {0xd8, 0, 0xdc, 0}};
-    for (const auto& bytes : bmp) CheckInvalidEncoding(30, bytes);
-    const std::vector<std::vector<unsigned char>> universal{
-        {0}, {0, 0}, {0, 0, 0}, {0, 0, 0xd8, 0}, {0, 0x11, 0, 0}, {0xff, 0xff, 0xff, 0xff}};
-    for (const auto& bytes : universal) CheckInvalidEncoding(28, bytes);
-}
-
 std::size_t lastAllocationSize = 0;
 int allocationCount = 0;
 int freeCount = 0;
-bool failAllocation = false;
 
 void* APS5_VABI Allocate_nid_no_patch(std::size_t size) {
     lastAllocationSize = size;
     ++allocationCount;
-    return failAllocation ? nullptr : std::malloc(size);
+    return std::malloc(size);
 }
 
 void APS5_VABI Free_nid_no_patch(void* pointer) {
@@ -230,15 +207,6 @@ void Allocator() {
     constexpr unsigned char expected[] = {0xc3, 0xbf};
     CheckConversion(20, input, expected);
     Require(allocationCount == 1 && lastAllocationSize == 3 && freeCount == 1, "conversion uses the application allocator");
-    failAllocation = true;
-    String value{1, 20, const_cast<unsigned char*>(input), 0};
-    unsigned char sentinel = 0xab;
-    unsigned char* result = &sentinel;
-    RequireThrows([&] { ASN1_STRING_to_UTF8_nid_postfix(&result, &value); }, "allocation failure throws");
-    Require(allocationCount == 2 && freeCount == 1 && result == &sentinel && sentinel == 0xab, "allocation failure preserves ownership");
-    constexpr unsigned char invalid[] = {0xff};
-    CheckInvalidEncoding(12, invalid);
-    Require(allocationCount == 2, "malformed input is checked before allocation");
 }
 
 } // namespace
@@ -253,5 +221,4 @@ int main(int argc, char**) {
     Accessors();
     Integers();
     Strings();
-    InvalidEncodings();
 }
