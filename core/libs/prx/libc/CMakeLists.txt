@@ -108,6 +108,20 @@ set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/src/MathExact.cpp
         TARGET_DIRECTORY libc PROPERTIES COMPILE_OPTIONS "-frounding-math")
 
 target_sources(libc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/BinaryWordIo.cpp)
+target_sources(libc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/LegacySignals.cpp)
+
+if(BUILD_TESTING)
+    add_test_executable(guest_legacy_signals_tests ${LIBS_INCLUDE_DIR}/tests/GuestLegacySignals.cpp)
+    target_include_directories(guest_legacy_signals_tests PRIVATE ${LIBS_INCLUDE_DIR})
+    target_link_libraries(guest_legacy_signals_tests PRIVATE libc libkernel)
+    configure_windows_unwind(guest_legacy_signals_tests)
+    add_test(NAME guest_legacy_signals COMMAND guest_legacy_signals_tests)
+    set_tests_properties(guest_legacy_signals PROPERTIES TIMEOUT 10)
+    if(WIN32)
+        set_tests_properties(guest_legacy_signals PROPERTIES ENVIRONMENT_MODIFICATION
+            "PATH=path_list_prepend:$<TARGET_FILE_DIR:libc>")
+    endif()
+endif()
 
 target_include_directories(libc PRIVATE
         ${LIBS_INCLUDE_DIR}

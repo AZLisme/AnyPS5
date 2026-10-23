@@ -3,6 +3,7 @@
 #include "prx/libkernel/Pthread/Posix/Common.hpp"
 #include "prx/libkernel/Pthread/include/Pthread.hpp"
 #include "prx/libc/include/general/VabiMacros.hpp"
+#include "prx/libc/include/LegacySignals.hpp"
 #include <atomic>
 #include <chrono>
 #include <condition_variable>
@@ -20,17 +21,6 @@
 extern "C" int* APS5_VABI __error_nid_postfix();
 extern "C" int APS5_VABI getpid_nid_postfix(void);
 extern "C" Pthread APS5_VABI scePthreadSelf(void);
-
-struct GuestSignalSet {
-    std::uint32_t bits[4];
-};
-
-struct GuestSigaction {
-    std::uintptr_t handler;
-    int flags;
-    GuestSignalSet mask;
-};
-static_assert(sizeof(GuestSigaction) == 32 && offsetof(GuestSigaction, flags) == 8 && offsetof(GuestSigaction, mask) == 12);
 
 extern "C" GuestSignalSet _sigintr_nid_postfix{};
 
@@ -667,4 +657,11 @@ int APS5_VABI _is_signal_return_nid_postfix(std::uint64_t programCounter) {
     return 0;
 }
 
+}
+
+namespace {
+const bool legacySignalsRegistered = [] {
+    RegisterLegacySignals_nid_no_patch(sigaction_nid_postfix, _sigprocmask_nid_postfix);
+    return true;
+}();
 }
