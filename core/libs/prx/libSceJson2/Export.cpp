@@ -41,6 +41,8 @@ struct Object { std::list<Pair>* items; };
 struct ArrayIteratorState {
     std::list<Value>::iterator position;
     std::list<Value>::iterator end;
+    std::list<Value>* owner = nullptr;
+    Value* current = nullptr;
 };
 struct ArrayIterator { ArrayIteratorState* state; };
 struct ObjectIteratorState {
@@ -166,6 +168,20 @@ void CopyArray(Array& destination, const Array& source) {
         throw;
     }
     destination = pending;
+}
+
+ArrayIteratorState ArrayPosition(const Array& array, std::list<Value>::iterator position) {
+    return {position, array.items->end(), array.items, position == array.items->end() ? nullptr : &*position};
+}
+
+bool FindArrayPosition(Array& array, const ArrayIterator& iterator, std::list<Value>::iterator& position) {
+    if (!iterator.state || iterator.state->owner != array.items) return false;
+    if (!iterator.state->current) {
+        position = array.items->end();
+        return true;
+    }
+    position = std::find_if(array.items->begin(), array.items->end(), [&](const Value& value) { return &value == iterator.state->current; });
+    return position != array.items->end();
 }
 
 void CopyObject(Object& destination, const Object& source) {
@@ -747,8 +763,8 @@ void APS5_VABI _ZN3sce4Json5Array9push_backERKNS0_5ValueE(Array* self, const Val
         throw;
     }
 }
-ArrayIterator* APS5_VABI _ZNK3sce4Json5Array5beginEv(ArrayIterator* result, const Array* self) { result->state = new ArrayIteratorState{self->items->begin(), self->items->end()}; return result; }
-ArrayIterator* APS5_VABI _ZNK3sce4Json5Array3endEv(ArrayIterator* result, const Array* self) { result->state = new ArrayIteratorState{self->items->end(), self->items->end()}; return result; }
+ArrayIterator* APS5_VABI _ZNK3sce4Json5Array5beginEv(ArrayIterator* result, const Array* self) { result->state = new ArrayIteratorState(ArrayPosition(*self, self->items->begin())); return result; }
+ArrayIterator* APS5_VABI _ZNK3sce4Json5Array3endEv(ArrayIterator* result, const Array* self) { result->state = new ArrayIteratorState(ArrayPosition(*self, self->items->end())); return result; }
 bool APS5_VABI _ZNK3sce4Json5Array5emptyEv(const Array* self) { return self->items->empty(); }
 std::size_t APS5_VABI _ZNK3sce4Json5Array4sizeEv(const Array* self) { return self->items->size(); }
 void APS5_VABI _ZN3sce4Json5Array5clearEv(Array* self) {
@@ -768,9 +784,58 @@ void APS5_VABI _ZN3sce4Json5Array9pop_frontEv(Array* self) {
     Destroy(self->items->front());
     self->items->pop_front();
 }
+void APS5_VABI _ZN3sce4Json5Array8pop_backEv(Array* self) {
+    if (!self || !self->items || self->items->empty()) NotImplemented_nid_no_patch(__func__);
+    Destroy(self->items->back());
+    self->items->pop_back();
+}
+
+Array* APS5_VABI _ZN3sce4Json5ArrayaSERKS1_(Array* self, const Array* other) {
+    if (!self || !self->items || !other || !other->items) NotImplemented_nid_no_patch(__func__);
+    if (self == other) return self;
+    Array copy{};
+    CopyArray(copy, *other);
+    Destroy(*self);
+    *self = copy;
+    return self;
+}
+
+ArrayIterator* APS5_VABI _ZN3sce4Json5Array6insertERKNS1_8iteratorERKNS0_5ValueE(ArrayIterator* result, Array* self, const ArrayIterator* where, const Value* value) {
+    if (!result || !self || !self->items || !where || result == where || !value || !value->node) NotImplemented_nid_no_patch(__func__);
+    std::list<Value>::iterator position;
+    if (!FindArrayPosition(*self, *where, position)) NotImplemented_nid_no_patch(__func__);
+    auto state = std::make_unique<ArrayIteratorState>();
+    Value copy{};
+    CopyInto(copy, *value);
+    try {
+        position = self->items->insert(position, copy);
+    } catch (...) {
+        Destroy(copy);
+        throw;
+    }
+    *state = ArrayPosition(*self, position);
+    result->state = state.release();
+    return result;
+}
+
+ArrayIterator* APS5_VABI _ZN3sce4Json5Array5eraseERKNS1_8iteratorE(ArrayIterator* result, Array* self, const ArrayIterator* where) {
+    if (!result || !self || !self->items || !where || result == where) NotImplemented_nid_no_patch(__func__);
+    std::list<Value>::iterator position;
+    if (!FindArrayPosition(*self, *where, position) || position == self->items->end()) NotImplemented_nid_no_patch(__func__);
+    auto state = std::make_unique<ArrayIteratorState>();
+    Destroy(*position);
+    position = self->items->erase(position);
+    *state = ArrayPosition(*self, position);
+    result->state = state.release();
+    return result;
+}
+
 void APS5_VABI _ZN3sce4Json5Array8iteratorD1Ev(ArrayIterator* self) { delete self->state; self->state = nullptr; }
 ArrayIterator* APS5_VABI _ZN3sce4Json5Array8iteratorppEv(ArrayIterator* self) {
-    if (self->state && self->state->position != self->state->end) ++self->state->position;
+    if (self->state && self->state->position != self->state->end) {
+        ++self->state->position;
+        self->state->current = self->state->position == self->state->end ? nullptr : &*self->state->position;
+    }
     return self;
 }
 Value* APS5_VABI _ZNK3sce4Json5Array8iteratordeEv(const ArrayIterator* self) {
@@ -791,6 +856,7 @@ ArrayIterator* APS5_VABI _ZN3sce4Json5Array8iterator7advanceEm(ArrayIterator* se
     if (self->state) {
         while (count && self->state->position != self->state->end) {
             ++self->state->position;
+            self->state->current = self->state->position == self->state->end ? nullptr : &*self->state->position;
             --count;
         }
     }
@@ -1235,13 +1301,14 @@ ArrayIterator* APS5_VABI _ZN3sce4Json5Array8iteratorppEi(ArrayIterator* result, 
 }
 
 ArrayIterator* APS5_VABI _ZN3sce4Json5Array8iteratoraSERKS2_(ArrayIterator* self, const ArrayIterator* other) {
-    if (self->state) {
-        if (other->state && other->state->position != other->state->end) {
-            *self->state = *other->state;
-        } else {
-            delete self->state;
-            self->state = nullptr;
-        }
+    if (!self || !other) NotImplemented_nid_no_patch(__func__);
+    if (self == other) return self;
+    if (other->state) {
+        if (self->state) *self->state = *other->state;
+        else self->state = new ArrayIteratorState(*other->state);
+    } else {
+        delete self->state;
+        self->state = nullptr;
     }
     return self;
 }

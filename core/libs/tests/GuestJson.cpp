@@ -437,10 +437,10 @@ static void ArrayIteratorCopies() {
     Require(!_ZNK3sce4Json5Array8iteratorneERKS2_(&it, &end));
     Require(*_ZNK3sce4Json5Value10getIntegerEv(_ZNK3sce4Json5Array8iteratordeEv(&previous)) == 3);
     Require(_ZN3sce4Json5Array8iteratoraSERKS2_(&it, &end) == &it);
-    Require(it.position == nullptr);
+    Require(!_ZNK3sce4Json5Array8iteratorneERKS2_(&it, &end));
     Require(_ZN3sce4Json5Array8iteratoraSERKS2_(&it, &begin) == &it);
-    Require(it.position == nullptr);
     Require(!_ZNK3sce4Json5Array8iteratorneERKS2_(&it, &begin));
+    Require(*_ZNK3sce4Json5Value10getIntegerEv(_ZNK3sce4Json5Array8iteratordeEv(&it)) == 1);
 
     _ZN3sce4Json5Array8iteratorD1Ev(&previous);
     _ZN3sce4Json5Array8iteratorD1Ev(&it);
