@@ -85,10 +85,12 @@ std::int64_t APS5_VABI ASN1_INTEGER_get_nid_postfix(const void* value) {
     if (integer.length <= 0 || !integer.data) return 0;
     std::uint64_t magnitude = 0;
     for (int index = 0; index < integer.length; ++index) magnitude = (magnitude << 8) | integer.data[index];
-    if (magnitude > static_cast<std::uint64_t>(std::numeric_limits<std::int64_t>::max()))
+    const bool negative = integer.type == 0x102;
+    const auto limit = static_cast<std::uint64_t>(std::numeric_limits<std::int64_t>::max()) + negative;
+    if (magnitude > limit)
         NotImplemented_nid_no_patch(__func__);
-    const auto result = static_cast<std::int64_t>(magnitude);
-    return integer.type == 0x102 ? -result : result;
+    if (negative && magnitude != 0) return -static_cast<std::int64_t>(magnitude - 1) - 1;
+    return static_cast<std::int64_t>(magnitude);
 }
 
 unsigned char* APS5_VABI ASN1_STRING_data_nid_postfix(void* value) {

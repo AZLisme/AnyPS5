@@ -122,6 +122,18 @@ void Integers() {
     Require(ASN1_INTEGER_get_nid_postfix(&value) == std::numeric_limits<std::int64_t>::max(), "maximum signed integer");
     value.type = 0x102;
     Require(ASN1_INTEGER_get_nid_postfix(&value) == -std::numeric_limits<std::int64_t>::max(), "negative maximum magnitude");
+    std::array<unsigned char, 8> minimum{0x80, 0, 0, 0, 0, 0, 0, 0};
+    value = {8, 0x102, minimum.data(), -1};
+    const String original = value;
+    Require(ASN1_INTEGER_get_nid_postfix(&value) == std::numeric_limits<std::int64_t>::min(), "minimum signed integer");
+    Require(value.length == original.length && value.type == original.type && value.data == original.data
+        && value.flags == original.flags && minimum == std::array<unsigned char, 8>{0x80, 0, 0, 0, 0, 0, 0, 0}, "minimum integer preserves input");
+    value.type = 2;
+    RequireThrows([&] { ASN1_INTEGER_get_nid_postfix(&value); }, "positive magnitude above signed maximum");
+    value.type = 0x102;
+    minimum.back() = 1;
+    RequireThrows([&] { ASN1_INTEGER_get_nid_postfix(&value); }, "negative magnitude below signed minimum");
+    value.data = maximum.data();
     maximum[0] = 0x80;
     for (int type : {2, 0x102}) {
         value.type = type;
