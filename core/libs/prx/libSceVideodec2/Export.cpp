@@ -679,6 +679,7 @@ static int GetPictureInfo(const OutputInfo* output, AvcPictureInfo* first, void*
             if (!found->second.hevc.unsupported.empty()) throw UnsupportedHevcMetadata{};
             const auto size = info->thisSize;
             GuestArena::HostWrite access(info, sizeof(*info));
+            if (!access.Open()) throw UnsupportedHevcMetadata{};
             *info = found->second.hevc.info;
             info->thisSize = size;
             return 0;
@@ -699,6 +700,7 @@ static int GetPictureInfo(const OutputInfo* output, AvcPictureInfo* first, void*
     }
     if (output->codecType == CodecHevc) {
         GuestArena::HostWrite access(&first->isValid, sizeof(first->isValid));
+        if (!access.Open()) throw UnsupportedHevcMetadata{};
         first->isValid = false;
     } else first->isValid = false;
     return 0;
@@ -735,11 +737,13 @@ int APS5_VABI sceVideodec2GetHevcPictureInfo_nid_postfix(const OutputInfo* outpu
         if (!found->second.hevc.unsupported.empty()) NotImplemented_nid_no_patch(__func__);
         const auto size = info->thisSize;
         GuestArena::HostWrite access(info, sizeof(*info));
+        if (!access.Open()) NotImplemented_nid_no_patch(__func__);
         *info = found->second.hevc.info;
         info->thisSize = size;
         return 0;
     }
     GuestArena::HostWrite access(&info->isValid, sizeof(info->isValid));
+    if (!access.Open()) NotImplemented_nid_no_patch(__func__);
     info->isValid = false;
     return 0;
 }

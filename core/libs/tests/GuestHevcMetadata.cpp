@@ -1,5 +1,7 @@
 #include "prx/libSceVideodec2/HevcMetadata.hpp"
 #include "prx/libc/include/general/VabiMacros.hpp"
+#include "prx/libc/include/GuestArena.hpp"
+#include "prx/libc/include/GuestWriteWatch.hpp"
 #include "HevcFixture.hpp"
 #include "HevcMetadataFixture.hpp"
 #include <array>
@@ -9,6 +11,11 @@
 #include <cstring>
 #include <stdexcept>
 #include <vector>
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#include <windows.h>
+#endif
 
 using namespace SceVideodec2;
 
@@ -67,6 +74,120 @@ struct Decoder {
         return result.info;
     }
 };
+
+struct GuestMetadataMapping {
+    static constexpr std::size_t block = 0x10000;
+    unsigned char* memory = nullptr;
+    bool watched = false;
+#ifdef _WIN32
+    HANDLE section = nullptr;
+#endif
+
+    GuestMetadataMapping() {
+        Require(GuestArena::GuestArenaAvailable_nid_postfix(), "guest arena unavailable");
+        memory = static_cast<unsigned char*>(GuestArena::GuestArenaAllocate_nid_postfix(2 * block, block));
+        Require(memory && GuestArena::GuestArenaContains_nid_postfix(memory, 2 * block), "allocate guest metadata mapping");
+#ifdef _WIN32
+        section = CreateFileMappingW(INVALID_HANDLE_VALUE, nullptr, PAGE_EXECUTE_READWRITE | SEC_RESERVE, 0, 2 * block, nullptr);
+        Require(section != nullptr, "create guest metadata section");
+        GuestArena::GuestArenaMap_nid_postfix(memory, 2 * block, section, 0, PAGE_READWRITE);
+#else
+        GuestArena::GuestArenaCommit_nid_postfix(memory, 2 * block, 0x04, block);
+#endif
+        watched = GuestWriteWatch::GuestWriteWatchAvailable_nid_postfix();
+        if (watched) GuestWriteWatch::GuestWriteWatchRegister_nid_postfix(memory, 2 * block);
+    }
+
+    ~GuestMetadataMapping() {
+        if (watched) GuestWriteWatch::GuestWriteWatchUnregister_nid_postfix(memory, 2 * block);
+        Protect(memory, 2 * block, 0x04);
+        GuestArena::GuestArenaReset_nid_postfix(memory, 2 * block);
+        GuestArena::GuestArenaRelease_nid_postfix(memory, 2 * block);
+#ifdef _WIN32
+        GuestArena::GuestArenaForgetSection_nid_postfix(section);
+        Require(CloseHandle(section), "close guest metadata section");
+#endif
+    }
+
+    Videodec2Hevc::PictureInfo* Info() const {
+        return reinterpret_cast<Videodec2Hevc::PictureInfo*>(memory + block - 96);
+    }
+
+    void Protect(void* pointer, std::size_t bytes, std::uint32_t protection) {
+#ifdef _WIN32
+        for (std::size_t offset = 0; offset < bytes; offset += block) {
+            DWORD previous = 0;
+            Require(VirtualProtect(static_cast<unsigned char*>(pointer) + offset, block, protection, &previous), "protect guest metadata section");
+        }
+#endif
+        GuestArena::GuestArenaSetProtection_nid_postfix(reinterpret_cast<std::uintptr_t>(pointer), bytes, protection);
+    }
+
+    void Initialize() {
+        Protect(memory, 2 * block, 0x04);
+        GuestArena::HostWrite access(memory, 2 * block);
+        Require(access.Open(), "initialize guest metadata access");
+        std::memset(memory, 0xa7, 2 * block);
+        Info()->thisSize = sizeof(*Info());
+        Info()->isValid = true;
+    }
+
+    std::size_t Collect() const {
+        std::size_t writes = 0;
+        if (watched) Require(GuestWriteWatch::GuestWriteWatchCollect_nid_postfix(reinterpret_cast<std::uintptr_t>(memory), 2 * block,
+            [](void* context, std::uintptr_t begin, std::uintptr_t end) { *static_cast<std::size_t*>(context) += end - begin; }, &writes), "collect guest metadata writes");
+        return writes;
+    }
+};
+
+void GuestMetadataWrites() {
+    Decoder decoder(1);
+    decoder.Decode(HevcFixture::hevcUnits(HevcFixture::HevcStream.data(), HevcFixture::HevcStream.size()).front(), 91);
+    if (!decoder.output.isValid) Require(sceVideodec2Flush_nid_postfix(decoder.handle, &decoder.frame, &decoder.output) == 0, "flush mapped metadata fixture");
+    Require(decoder.output.isValid, "mapped metadata fixture produced no picture");
+    const auto expected = decoder.Query();
+    GuestMetadataMapping mapping;
+    for (const bool generic : {false, true}) {
+        for (const bool owned : {false, true}) {
+            auto output = decoder.output;
+            if (!owned) output.frameBuffer = nullptr;
+            const auto query = [&] {
+                return generic ? sceVideodec2GetPictureInfo_nid_postfix(&output, reinterpret_cast<AvcPictureInfo*>(mapping.Info()), nullptr) :
+                    sceVideodec2GetHevcPictureInfo_nid_postfix(&output, mapping.Info());
+            };
+            mapping.Initialize();
+            auto* first = reinterpret_cast<unsigned char*>(mapping.Info()) - 16;
+            std::array<unsigned char, sizeof(Videodec2Hevc::PictureInfo) + 32> initial{};
+            std::memcpy(initial.data(), first, initial.size());
+            mapping.Collect();
+            Require(query() == 0, "guest-mapped metadata query");
+            if (owned) {
+                Require(mapping.Info()->isValid && mapping.Info()->thisSize == sizeof(expected) &&
+                    mapping.Info()->ptsData == expected.ptsData && mapping.Info()->attachedData == expected.attachedData &&
+                    mapping.Info()->width == expected.width && mapping.Info()->profile == expected.profile, "guest-mapped metadata value");
+                Require(std::memcmp(first, initial.data(), 16) == 0 &&
+                    std::memcmp(first + 16 + sizeof(expected), initial.data() + 16 + sizeof(expected), 16) == 0, "guest metadata canaries");
+            } else {
+                initial[16 + offsetof(Videodec2Hevc::PictureInfo, isValid)] = 0;
+                Require(std::memcmp(first, initial.data(), initial.size()) == 0, "invalid-picture mapping changes only isValid");
+            }
+            if (mapping.watched) Require(mapping.Collect() != 0, "guest metadata write not reported");
+#ifdef _WIN32
+            mapping.Initialize();
+            std::memcpy(initial.data(), first, initial.size());
+            const auto refused = mapping.memory + (owned ? GuestMetadataMapping::block : 0);
+            mapping.Protect(refused, GuestMetadataMapping::block, 0x02);
+            {
+                GuestArena::HostWrite access(owned ? static_cast<void*>(mapping.Info()) : static_cast<void*>(&mapping.Info()->isValid),
+                    owned ? sizeof(*mapping.Info()) : sizeof(mapping.Info()->isValid));
+                Require(!access.Open(), "read-only metadata mapping unexpectedly writable");
+            }
+            Rejects(query, "read-only metadata query did not reject access");
+            Require(std::memcmp(first, initial.data(), initial.size()) == 0, "rejected metadata write changed output or canaries");
+#endif
+        }
+    }
+}
 
 void RejectUnchanged(Decoder& decoder);
 
@@ -385,6 +506,7 @@ void TransferAssociation() {
 }
 
 int main() {
+    GuestMetadataWrites();
     Clips();
     Clips(true);
     Single(HevcFixture::HevcMain10Stream, 2, 0, true);
@@ -396,4 +518,3 @@ int main() {
     MalformedParameterHistory();
     TransferAssociation();
 }
-
