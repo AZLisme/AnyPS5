@@ -37,10 +37,208 @@ void Rejects(TCall call, const char* message) {
     Require(false, message);
 }
 
+template<typename TCall>
+bool TryProjection(TCall call) {
+    try { call(); return true; }
+    catch (const std::runtime_error&) { return false; }
+}
+
+int QueryPicture(unsigned getter, const OutputInfo* output, void* first, void* second = nullptr) {
+    switch (getter) {
+    case 0: return sceVideodec2GetPictureInfo_nid_postfix(output, static_cast<AvcPictureInfo*>(first), second);
+    case 1: return sceVideodec2GetAvcPictureInfo_nid_postfix(output, static_cast<AvcPictureInfo*>(first), static_cast<AvcPictureInfo*>(second));
+    case 2: return sceVideodec2GetHevcPictureInfo_nid_postfix(output, static_cast<Videodec2Hevc::PictureInfo*>(first));
+    default: return sceVideodec2GetVp9PictureInfo_nid_postfix(output, static_cast<Vp9PictureInfo*>(first));
+    }
+}
+
+void ArgumentErrors() {
+    constexpr int pointerError = static_cast<int>(0x811D0102u);
+    constexpr int sizeError = static_cast<int>(0x811D0101u);
+    constexpr int alignmentError = static_cast<int>(0x811D0108u);
+    constexpr int bufferError = static_cast<int>(0x811D0107u);
+    constexpr int countError = static_cast<int>(0x811D010Fu);
+    using Bytes = std::array<std::uint8_t, sizeof(Videodec2Hevc::PictureInfo) + 32>;
+    const auto initialize = [](Bytes& bytes) {
+        bytes.fill(0xa5);
+        const std::uint64_t size = sizeof(Videodec2Hevc::PictureInfo);
+        std::memcpy(bytes.data() + 16, &size, sizeof(size));
+    };
+    for (unsigned getter = 0; getter < 4; ++getter) {
+        const bool generic = getter < 2;
+        const auto query = [getter](const OutputInfo* output, void* first, void* second) {
+            return QueryPicture(getter, output, first, second);
+        };
+        for (const std::uint32_t codec : {codecHevc, 1u, 2382845u, 0u}) {
+            OutputInfo valid{sizeof(OutputInfo)};
+            valid.codecType = codec;
+            valid.frameBuffer = reinterpret_cast<void*>(0x100000);
+            valid.frameBufferSize = 0x10000;
+            valid.pictureCount = 1;
+            Bytes first{}, second{};
+            initialize(first);
+            initialize(second);
+            const auto secondBefore = second;
+            Require(query(nullptr, nullptr, reinterpret_cast<void*>(1)) == pointerError, "null first must return before touching second");
+            Require(query(&valid, nullptr, second.data() + 16) == pointerError && second == secondBefore, "null first mutated second");
+            const auto check = [&](const OutputInfo* output, int expected) {
+                initialize(first);
+                initialize(second);
+                auto expectedFirst = first;
+                auto expectedSecond = second;
+                std::memset(expectedFirst.data() + 24, 0, 4);
+                if (generic) std::memset(expectedSecond.data() + 24, 0, 4);
+                Require(query(output, first.data() + 16, second.data() + 16) == expected, "native picture argument result/order");
+                Require(first == expectedFirst && second == expectedSecond, "native argument rejection must only clear validity words");
+            };
+            check(nullptr, pointerError);
+            for (const std::uint64_t size : {0u, 0x28u, 0x40u}) {
+                auto invalid = valid;
+                invalid.thisSize = size;
+                invalid.frameBuffer = reinterpret_cast<void*>(0x100001);
+                invalid.pictureCount = 0;
+                check(&invalid, sizeError);
+                invalid.frameBuffer = nullptr;
+                check(&invalid, sizeError);
+            }
+            for (const std::uintptr_t offset : {1u, 0x80u}) {
+                auto invalid = valid;
+                invalid.frameBuffer = reinterpret_cast<void*>(0x100000 + offset);
+                invalid.pictureCount = 0;
+                invalid.frameBufferSize = 0x400;
+                check(&invalid, alignmentError);
+            }
+            auto invalid = valid;
+            invalid.frameBuffer = nullptr;
+            invalid.pictureCount = 0;
+            check(&invalid, bufferError);
+            for (const std::uint8_t count : {0, 3, 255}) {
+                invalid = valid;
+                invalid.pictureCount = count;
+                invalid.frameBufferSize = 0x400;
+                check(&invalid, countError);
+                invalid.thisSize = 0x30;
+                invalid.frameBuffer = reinterpret_cast<void*>(0x100100);
+                check(&invalid, countError);
+            }
+            initialize(first);
+            auto both = first;
+            std::memset(both.data() + 24, 0, 4);
+            Require(query(nullptr, first.data() + 16, first.data() + 16) == pointerError && first == both, "identical metadata destinations");
+            alignas(OutputInfo) std::array<std::uint8_t, sizeof(OutputInfo) + 16> aliased{};
+            std::memcpy(aliased.data() + 16, &valid, sizeof(valid));
+            auto* output = reinterpret_cast<OutputInfo*>(aliased.data() + 16);
+            Require(query(output, aliased.data() + 8, nullptr) == sizeError && output->thisSize == 0, "argument fields must be read after aliased validity clear");
+            if (generic) {
+                initialize(first);
+                auto outputCopy = valid;
+                auto* secondAlias = reinterpret_cast<std::uint8_t*>(&outputCopy.frameBuffer) - 8;
+                Require(query(&outputCopy, first.data() + 16, secondAlias) == bufferError && outputCopy.frameBuffer == nullptr, "second early clear must precede frame-buffer validation");
+            }
+        }
+    }
+}
+
+void ArgumentSizes() {
+    constexpr int sizeError = static_cast<int>(0x811D0101u);
+    constexpr int bufferError = static_cast<int>(0x811D0106u);
+    using Bytes = std::array<std::uint8_t, sizeof(Videodec2Hevc::PictureInfo) + 32>;
+    alignas(256) std::array<std::uint8_t, 0x1000> backing{};
+    for (unsigned getter = 0; getter < 4; ++getter) {
+        for (const std::uint32_t codec : {codecHevc, 1u, 2382845u, 0u}) {
+            for (const std::uint64_t outputSize : {0x30u, 0x38u}) {
+                OutputInfo output{outputSize};
+                output.codecType = codec;
+                output.frameBuffer = backing.data();
+                Bytes first{}, second{};
+                const auto initialize = [&](std::uint64_t firstSize, std::uint64_t secondSize) {
+                    first.fill(0xa5);
+                    second.fill(0x5a);
+                    std::memcpy(first.data() + 16, &firstSize, sizeof(firstSize));
+                    std::memcpy(second.data() + 16, &secondSize, sizeof(secondSize));
+                };
+                const auto check = [&](int expected, bool withSecond = true) {
+                    auto expectedFirst = first;
+                    auto expectedSecond = second;
+                    std::memset(expectedFirst.data() + 24, 0, 4);
+                    if (getter < 2 && withSecond) std::memset(expectedSecond.data() + 24, 0, 4);
+                    Require(QueryPicture(getter, &output, first.data() + 16, withSecond ? second.data() + 16 : nullptr) == expected, "native buffer/version error order");
+                    Require(first == expectedFirst && second == expectedSecond, "buffer/version error changed more than validity words");
+                };
+                for (const std::uint8_t count : {1, 2}) {
+                    output.pictureCount = count;
+                    const auto boundary = std::uint64_t{count} * 0x400;
+                    for (const auto bytes : {std::uint64_t{0}, boundary - 1, boundary}) {
+                        for (const bool withSecond : {false, true}) {
+                            output.frameBufferSize = bytes;
+                            initialize(0, 0x60);
+                            check(bufferError, withSecond);
+                        }
+                    }
+                    for (const auto bytes : {boundary + 1, (std::uint64_t{1} << 63) + 0x400, UINT64_MAX}) {
+                        output.frameBufferSize = bytes;
+                        initialize(0, 0xb8);
+                        check(sizeError);
+                        for (const std::uint64_t rejected : {0u, 0x38u, 0x50u, 0x60u, 0x98u, 0xb0u, 0xc8u}) {
+                            initialize(rejected, 0xb8);
+                            check(sizeError);
+                        }
+                        for (const std::uint64_t accepted : {0x58u, 0x68u, 0x78u, 0x88u, 0xa8u, 0xb8u}) {
+                            initialize(accepted, 0x60);
+                            if (count == 2 && getter < 2) {
+                                check(sizeError);
+                            } else if (bytes == boundary + 1) {
+                                auto expectedFirst = first;
+                                auto expectedSecond = second;
+                                std::memset(expectedFirst.data() + 24, 0, 4);
+                                if (getter < 2) std::memset(expectedSecond.data() + 24, 0, 4);
+                                const bool completed = TryProjection([&] { QueryPicture(getter, &output, first.data() + 16, second.data() + 16); });
+                                Require(std::memcmp(first.data(), expectedFirst.data(), 16) == 0 && std::memcmp(first.data() + 16 + accepted, expectedFirst.data() + 16 + accepted, first.size() - 16 - accepted) == 0, "accepted-version output crossed its declared boundary");
+                                if (!completed) Require(first == expectedFirst && second == expectedSecond, "unsupported projection changed more than validity words");
+                            }
+                        }
+                    }
+                }
+                if (getter < 2) {
+                    output.pictureCount = 1;
+                    output.frameBufferSize = 0x401;
+                    initialize(0xb8, 0xb8);
+                    auto expected = first;
+                    std::memset(expected.data() + 16, 0, 4);
+                    std::memset(expected.data() + 24, 0, 4);
+                    Require(QueryPicture(getter, &output, first.data() + 16, first.data() + 8) == sizeError && first == expected, "second alias must be cleared before destination version read");
+                    initialize(0xb8, 0xb8);
+                    output.frameBufferSize = 0x401;
+                    auto* sizeAlias = reinterpret_cast<std::uint8_t*>(&output.frameBufferSize) - 8;
+                    Require(QueryPicture(getter, &output, first.data() + 16, sizeAlias) == bufferError && output.frameBufferSize == 0, "buffer-size gate must read after secondary validity clear");
+                    output.pictureCount = 2;
+                    output.frameBufferSize = 0x801;
+                    for (const std::uint64_t secondSize : {0x58u, 0x68u, 0x78u, 0x88u, 0xa8u, 0xb8u}) {
+                        initialize(0xb8, secondSize);
+                        auto beforeFirst = first;
+                        auto beforeSecond = second;
+                        const bool completed = TryProjection([&] { QueryPicture(getter, &output, first.data() + 16, second.data() + 16); });
+                        Require(std::memcmp(first.data(), beforeFirst.data(), 16) == 0 && std::memcmp(first.data() + 16 + 0xb8, beforeFirst.data() + 16 + 0xb8, 16) == 0, "two-picture primary output canary");
+                        Require(std::memcmp(second.data(), beforeSecond.data(), 16) == 0 && std::memcmp(second.data() + 16 + secondSize, beforeSecond.data() + 16 + secondSize, second.size() - 16 - secondSize) == 0, "two-picture secondary output canary");
+                        if (!completed) {
+                            std::memset(beforeFirst.data() + 24, 0, 4);
+                            std::memset(beforeSecond.data() + 24, 0, 4);
+                            Require(first == beforeFirst && second == beforeSecond, "unsupported two-picture projection changed more than validity words");
+                        }
+                    }
+                    initialize(0xb8, 0);
+                    TryProjection([&] { QueryPicture(getter, &output, first.data() + 16); });
+                }
+            }
+        }
+    }
+}
+
 struct Decoder {
     std::uint64_t handle = 0;
     DecoderMemoryInfo memory{sizeof(memory)};
-    std::vector<std::uint8_t> buffer;
+    std::vector<std::uint8_t> storage;
+    std::span<std::uint8_t> buffer;
     FrameBuffer frame{sizeof(frame)};
     OutputInfo output{sizeof(output)};
 
@@ -48,7 +246,7 @@ struct Decoder {
         const DecoderConfigInfo config{sizeof(config), 1, codecHevc, profile, 0, 64, 48, 4, 1};
         Require(sceVideodec2QueryDecoderMemoryInfo_nid_postfix(&config, &memory) == 0, "query memory");
         Require(sceVideodec2CreateDecoder_nid_postfix(&config, &memory, &handle) == 0, "create decoder");
-        buffer.resize(memory.maxFrameBufferSize);
+        buffer = HevcFixture::AlignedFrameStorage(storage, memory.maxFrameBufferSize, memory.frameBufferAlignment);
         frame.frameBuffer = buffer.data();
         frame.frameBufferSize = buffer.size();
     }
@@ -140,6 +338,56 @@ struct GuestMetadataMapping {
     }
 };
 
+void GuestArgumentWrites() {
+    GuestMetadataMapping mapping;
+    auto* second = reinterpret_cast<AvcPictureInfo*>(mapping.memory + GuestMetadataMapping::block + 32);
+    constexpr int pointerError = static_cast<int>(0x811D0102u);
+    for (unsigned getter = 0; getter < 4; ++getter) {
+        const bool generic = getter < 2;
+        const auto query = [&] {
+            return QueryPicture(getter, nullptr, mapping.Info(), second);
+        };
+        mapping.Initialize();
+        auto expected = std::vector<std::uint8_t>(mapping.memory, mapping.memory + 2 * GuestMetadataMapping::block);
+        std::memset(expected.data() + GuestMetadataMapping::block - 96 + 8, 0, 4);
+        if (generic) std::memset(expected.data() + GuestMetadataMapping::block + 32 + 8, 0, 4);
+        mapping.Collect();
+        Require(query() == pointerError, "guest-mapped argument error result");
+        Require(std::memcmp(mapping.memory, expected.data(), expected.size()) == 0, "guest-mapped argument prefix changed more than validity words");
+        if (mapping.watched) Require(mapping.Collect() != 0, "guest argument prefix write not reported");
+#ifdef _WIN32
+        for (const std::size_t block : {0u, 1u}) {
+            if (!generic && block == 1) continue;
+            mapping.Initialize();
+            expected.assign(mapping.memory, mapping.memory + 2 * GuestMetadataMapping::block);
+            mapping.Protect(mapping.memory + block * GuestMetadataMapping::block, GuestMetadataMapping::block, 0x02);
+            Rejects(query, "read-only early argument destination did not refuse");
+            Require(std::memcmp(mapping.memory, expected.data(), expected.size()) == 0, "rejected early scope partially cleared either destination");
+        }
+#endif
+    }
+}
+
+void SecondaryVersionNoRead() {
+    GuestMetadataMapping mapping;
+    auto* second = mapping.memory + GuestMetadataMapping::block - 8;
+    OutputInfo output{sizeof(output)};
+    alignas(256) std::array<std::uint8_t, 0x1000> backing{};
+    output.frameBuffer = backing.data();
+    output.frameBufferSize = 0x401;
+    output.pictureCount = 1;
+    for (unsigned getter = 0; getter < 2; ++getter) {
+        mapping.Initialize();
+        Videodec2Hevc::PictureInfo info{sizeof(info)};
+        auto expected = std::vector<std::uint8_t>(mapping.memory, mapping.memory + 2 * GuestMetadataMapping::block);
+        std::memset(expected.data() + GuestMetadataMapping::block, 0, 4);
+        mapping.Protect(mapping.memory, GuestMetadataMapping::block, 0x01);
+        TryProjection([&] { QueryPicture(getter, &output, &info, second); });
+        mapping.Protect(mapping.memory, GuestMetadataMapping::block, 0x04);
+        Require(std::memcmp(mapping.memory, expected.data(), expected.size()) == 0, "count-one secondary version was accessed beyond validity word");
+    }
+}
+
 void GuestMetadataWrites() {
     Decoder decoder(1);
     decoder.Decode(HevcFixture::hevcUnits(HevcFixture::HevcStream.data(), HevcFixture::HevcStream.size()).front(), 91);
@@ -147,20 +395,19 @@ void GuestMetadataWrites() {
     Require(decoder.output.isValid, "mapped metadata fixture produced no picture");
     const auto expected = decoder.Query();
     GuestMetadataMapping mapping;
-    for (const bool generic : {false, true}) {
+    for (unsigned getter = 0; getter < 4; ++getter) {
         for (const bool owned : {false, true}) {
             auto output = decoder.output;
             if (!owned) output.frameBuffer = nullptr;
             const auto query = [&] {
-                return generic ? sceVideodec2GetPictureInfo_nid_postfix(&output, reinterpret_cast<AvcPictureInfo*>(mapping.Info()), nullptr) :
-                    sceVideodec2GetHevcPictureInfo_nid_postfix(&output, mapping.Info());
+                return QueryPicture(getter, &output, mapping.Info());
             };
             mapping.Initialize();
             auto* first = reinterpret_cast<unsigned char*>(mapping.Info()) - 16;
             std::array<unsigned char, sizeof(Videodec2Hevc::PictureInfo) + 32> initial{};
             std::memcpy(initial.data(), first, initial.size());
             mapping.Collect();
-            Require(query() == 0, "guest-mapped metadata query");
+            Require(query() == (owned ? 0 : static_cast<int>(0x811D0107u)), "guest-mapped metadata query");
             if (owned) {
                 Require(mapping.Info()->isValid && mapping.Info()->thisSize == sizeof(expected) &&
                     mapping.Info()->ptsData == expected.ptsData && mapping.Info()->attachedData == expected.attachedData &&
@@ -168,8 +415,8 @@ void GuestMetadataWrites() {
                 Require(std::memcmp(first, initial.data(), 16) == 0 &&
                     std::memcmp(first + 16 + sizeof(expected), initial.data() + 16 + sizeof(expected), 16) == 0, "guest metadata canaries");
             } else {
-                initial[16 + offsetof(Videodec2Hevc::PictureInfo, isValid)] = 0;
-                Require(std::memcmp(first, initial.data(), initial.size()) == 0, "invalid-picture mapping changes only isValid");
+                std::memset(initial.data() + 16 + offsetof(Videodec2Hevc::PictureInfo, isValid), 0, 4);
+                Require(std::memcmp(first, initial.data(), initial.size()) == 0, "invalid-picture mapping changes only validity word");
             }
             if (mapping.watched) Require(mapping.Collect() != 0, "guest metadata write not reported");
 #ifdef _WIN32
@@ -179,11 +426,12 @@ void GuestMetadataWrites() {
             mapping.Protect(refused, GuestMetadataMapping::block, 0x02);
             {
                 GuestArena::HostWrite access(owned ? static_cast<void*>(mapping.Info()) : static_cast<void*>(&mapping.Info()->isValid),
-                    owned ? sizeof(*mapping.Info()) : sizeof(mapping.Info()->isValid));
+                    owned ? sizeof(*mapping.Info()) : sizeof(std::uint32_t));
                 Require(!access.Open(), "read-only metadata mapping unexpectedly writable");
             }
             Rejects(query, "read-only metadata query did not reject access");
-            Require(std::memcmp(first, initial.data(), initial.size()) == 0, "rejected metadata write changed output or canaries");
+            if (owned) std::memset(initial.data() + 16 + offsetof(Videodec2Hevc::PictureInfo, isValid), 0, 4);
+            Require(std::memcmp(first, initial.data(), initial.size()) == 0, "rejected payload write changed more than its early validity word");
 #endif
         }
     }
@@ -240,11 +488,10 @@ void Clips(bool alternativeTransfer = false) {
     Videodec2Hevc::PictureInfo invalid{sizeof(invalid)};
     invalid.isValid = true;
     Require(sceVideodec2Reset_nid_postfix(decoder.handle) == 0, "reset");
-    Require(sceVideodec2GetHevcPictureInfo_nid_postfix(&decoder.output, &invalid) == 0 && !invalid.isValid, "reset releases picture metadata");
+    Require(sceVideodec2GetHevcPictureInfo_nid_postfix(&decoder.output, &invalid) == static_cast<int>(0x811D010Fu) && !invalid.isValid, "reset output has no picture count");
     invalid.thisSize = 8;
     invalid.isValid = true;
-    Rejects([&] { sceVideodec2GetPictureInfo_nid_postfix(&decoder.output, reinterpret_cast<AvcPictureInfo*>(&invalid), nullptr); }, "unowned generic HEVC query accepted an undersized destination");
-    Require(invalid.isValid, "unowned undersized generic query changed destination");
+    Require(sceVideodec2GetPictureInfo_nid_postfix(&decoder.output, reinterpret_cast<AvcPictureInfo*>(&invalid), nullptr) == static_cast<int>(0x811D010Fu) && !invalid.isValid, "picture-count error must precede destination size");
     decoder.Decode(units.front(), 99);
     Require(sceVideodec2Flush_nid_postfix(decoder.handle, &decoder.frame, &decoder.output) == 0 && decoder.output.isValid, "decode after reset");
     Require(decoder.Query().attachedData == 3099, "new metadata after reset");
@@ -264,24 +511,35 @@ void Single(std::span<const std::uint8_t> stream, unsigned bitDepth, unsigned bo
     Require(info.attachedData == 3007 && info.vpsPresent == 1 && info.spsPresent == 1 && info.ppsPresent == 1 && info.delimiterPresent == delimiter, "single-picture tags and presence");
     Require(info.idr == 1 && info.irap == 1 && info.preferredTransfer == 0 && info.pictureTimingPresent == 0, "single-picture tail metadata");
     Require(info.conformanceWindow == (bottomCrop != 0) && info.confBottom == bottomCrop && info.confLeft == 0 && info.confRight == 0 && info.confTop == 0, "raw chroma-unit conformance offsets");
-    auto badOutput = decoder.output;
-    auto badInfo = info;
-    Rejects([&] { sceVideodec2GetHevcPictureInfo_nid_postfix(nullptr, &badInfo); }, "null output accepted");
-    Rejects([&] { sceVideodec2GetHevcPictureInfo_nid_postfix(&badOutput, nullptr); }, "null destination accepted");
-    badInfo.thisSize = sizeof(badInfo) - 1;
-    Rejects([&] { sceVideodec2GetHevcPictureInfo_nid_postfix(&badOutput, &badInfo); }, "undersized destination accepted");
-    badInfo = info;
-    badOutput.thisSize = 8;
-    Rejects([&] { sceVideodec2GetHevcPictureInfo_nid_postfix(&badOutput, &badInfo); }, "undersized output accepted");
-    badOutput = decoder.output;
-    badOutput.codecType = 1;
-    Rejects([&] { sceVideodec2GetHevcPictureInfo_nid_postfix(&badOutput, &badInfo); }, "another codec accepted");
-    std::array<std::uint8_t, sizeof(badInfo)> before;
-    std::memcpy(before.data(), &badInfo, before.size());
-    Rejects([&] { sceVideodec2GetAvcPictureInfo_nid_postfix(&decoder.output, reinterpret_cast<AvcPictureInfo*>(&badInfo), nullptr); }, "AVC-specific getter accepted HEVC with a large buffer");
-    Require(std::memcmp(before.data(), &badInfo, before.size()) == 0, "AVC-specific failure modified its output");
-    Rejects([&] { sceVideodec2GetAvcPictureInfo_nid_postfix(&badOutput, reinterpret_cast<AvcPictureInfo*>(&badInfo), nullptr); }, "AVC-specific getter trusted forged codec tag");
-    Require(std::memcmp(before.data(), &badInfo, before.size()) == 0, "forged codec tag changed AVC failure output");
+    for (unsigned getter = 0; getter < 4; ++getter) {
+        alignas(8) std::array<std::uint8_t, sizeof(info) + 32> unaligned;
+        unaligned.fill(0xa5);
+        const std::uint64_t nativeSize = sizeof(info);
+        std::memcpy(unaligned.data() + 17, &nativeSize, sizeof(nativeSize));
+        const auto guarded = unaligned;
+        Require(QueryPicture(getter, &decoder.output, unaligned.data() + 17) == 0, "unaligned metadata destination");
+        Videodec2Hevc::PictureInfo aligned{};
+        std::memcpy(&aligned, unaligned.data() + 17, sizeof(aligned));
+        Require(aligned.isValid && aligned.ptsData == info.ptsData && aligned.width == info.width, "unaligned metadata values");
+        Require(std::memcmp(unaligned.data(), guarded.data(), 17) == 0 && std::memcmp(unaligned.data() + 17 + sizeof(info), guarded.data() + 17 + sizeof(info), 15) == 0, "unaligned metadata canaries");
+        for (const std::uint32_t codec : {codecHevc, 1u, 2382845u, 0u}) {
+            for (const std::uint64_t size : {0x30u, 0x38u}) {
+                auto output = decoder.output;
+                output.codecType = codec;
+                output.thisSize = size;
+                Videodec2Hevc::PictureInfo projected{sizeof(projected)};
+                std::array<std::uint8_t, sizeof(projected)> second;
+                second.fill(0xa5);
+                const std::uint64_t secondSize = 0x60;
+                std::memcpy(second.data(), &secondSize, sizeof(secondSize));
+                auto expected = second;
+                if (getter < 2) std::memset(expected.data() + 8, 0, 4);
+                Require(QueryPicture(getter, &output, &projected, second.data()) == 0, "all named wrappers must project owned HEVC metadata after native validation");
+                Require(projected.thisSize == sizeof(projected) && projected.isValid && projected.ptsData == info.ptsData && projected.width == info.width, "mutable codec tag changed tracked metadata projection");
+                Require(second == expected, "count-one secondary output must only clear its validity word");
+            }
+        }
+    }
 }
 
 void UnsupportedPicture() {
@@ -296,10 +554,11 @@ void UnsupportedPicture() {
     untouched.thisSize = sizeof(untouched);
     std::array<std::uint8_t, sizeof(untouched)> before;
     std::memcpy(before.data(), &untouched, before.size());
+    std::memset(before.data() + 8, 0, 4);
     Rejects([&] { sceVideodec2GetHevcPictureInfo_nid_postfix(&decoder.output, &untouched); }, "unknown SEI metadata did not throw");
-    Require(std::memcmp(before.data(), &untouched, before.size()) == 0, "unsupported query changed destination");
+    Require(std::memcmp(before.data(), &untouched, before.size()) == 0, "unsupported query changed more than validity word");
     Rejects([&] { sceVideodec2GetPictureInfo_nid_postfix(&decoder.output, reinterpret_cast<AvcPictureInfo*>(&untouched), nullptr); }, "generic unknown metadata did not throw");
-    Require(std::memcmp(before.data(), &untouched, before.size()) == 0, "generic unsupported query changed destination");
+    Require(std::memcmp(before.data(), &untouched, before.size()) == 0, "generic unsupported query changed more than validity word");
     Require(sceVideodec2Reset_nid_postfix(decoder.handle) == 0, "clear unsupported metadata on reset");
     const auto clean = HevcFixture::hevcUnits(HevcFixture::HevcStream.data(), HevcFixture::HevcStream.size());
     decoder.Decode(clean[0], 80);
@@ -310,7 +569,8 @@ void UnsupportedPicture() {
     decoder.handle = 0;
     untouched = {sizeof(untouched)};
     untouched.isValid = true;
-    Require(sceVideodec2GetHevcPictureInfo_nid_postfix(&previous, &untouched) == 0 && !untouched.isValid, "deleted owner releases metadata");
+    const bool completed = TryProjection([&] { sceVideodec2GetHevcPictureInfo_nid_postfix(&previous, &untouched); });
+    if (!completed) Require(!untouched.isValid, "unsupported untracked metadata retained validity");
 }
 
 std::vector<std::uint8_t> Replacement(unsigned wanted) {
@@ -372,8 +632,9 @@ void RejectUnchanged(Decoder& decoder) {
     info.thisSize = sizeof(info);
     std::array<std::uint8_t, sizeof(info)> before;
     std::memcpy(before.data(), &info, sizeof(info));
+    std::memset(before.data() + 8, 0, 4);
     Rejects([&] { sceVideodec2GetHevcPictureInfo_nid_postfix(&decoder.output, &info); }, "ambiguous replacement metadata succeeded");
-    Require(std::memcmp(before.data(), &info, sizeof(info)) == 0, "ambiguous replacement query mutated output");
+    Require(std::memcmp(before.data(), &info, sizeof(info)) == 0, "ambiguous replacement query changed more than validity word");
 }
 
 void ParameterReplacements() {
@@ -384,7 +645,8 @@ void ParameterReplacements() {
         Require(sceVideodec2Flush_nid_postfix(decoder.handle, &decoder.frame, &decoder.output) == 0 && decoder.output.isValid, "initial replacement-test picture");
         Require(decoder.Query().attachedData == 3010, "initial parameter metadata");
         const auto previous = decoder.output;
-        std::vector<std::uint8_t> nextBuffer(decoder.buffer.size());
+        std::vector<std::uint8_t> nextStorage;
+        const auto nextBuffer = HevcFixture::AlignedFrameStorage(nextStorage, decoder.buffer.size(), decoder.memory.frameBufferAlignment);
         decoder.frame.frameBuffer = nextBuffer.data();
         decoder.Decode(type == 0 ? original : Replacement(type), 20);
         Require(sceVideodec2Flush_nid_postfix(decoder.handle, &decoder.frame, &decoder.output) == 0 && decoder.output.isValid, "decode repeated or replaced parameter sets");
@@ -505,7 +767,12 @@ void TransferAssociation() {
 
 }
 
-int main() {
+int main(int argc, char** argv) {
+    ArgumentErrors();
+    ArgumentSizes();
+    GuestArgumentWrites();
+    SecondaryVersionNoRead();
+    if (argc == 2 && std::strcmp(argv[1], "--arguments") == 0) return 0;
     GuestMetadataWrites();
     Clips();
     Clips(true);
