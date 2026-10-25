@@ -1,3 +1,4 @@
+#include "prx/libSceIcu/libSceIcu.hpp"
 #include "SceTypes.hpp"
 #include "prx/libSceIcu/include/HashToken.hpp"
 #include "prx/libc/include/General.hpp"

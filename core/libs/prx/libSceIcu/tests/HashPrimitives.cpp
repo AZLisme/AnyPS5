@@ -1,3 +1,4 @@
+#include "prx/libSceIcu/libSceIcu.hpp"
 #include "SceTypes.hpp"
 #include "prx/libSceIcu/include/HashToken.hpp"
 #include <algorithm>
@@ -15,18 +16,7 @@ using IcuPrimitives::HashToken;
 using Hasher = std::int32_t (APS5_VABI*)(HashToken);
 using Equal = std::int8_t (APS5_VABI*)(HashToken, HashToken);
 
-extern "C" {
-std::int32_t APS5_VABI uhash_hashChars_nid_postfix(HashToken);
-std::int32_t APS5_VABI uhash_hashUChars_nid_postfix(HashToken);
-std::int32_t APS5_VABI uhash_hashIChars_nid_postfix(HashToken);
-std::int32_t APS5_VABI uhash_hashLong_nid_postfix(HashToken);
-std::int8_t APS5_VABI uhash_compareChars_nid_postfix(HashToken, HashToken);
-std::int8_t APS5_VABI uhash_compareUChars_nid_postfix(HashToken, HashToken);
-std::int8_t APS5_VABI uhash_compareIChars_nid_postfix(HashToken, HashToken);
-std::int8_t APS5_VABI uhash_compareLong_nid_postfix(HashToken, HashToken);
-std::int32_t APS5_VABI ustr_hashCharsN_nid_postfix(const char*, std::int32_t);
-std::int32_t APS5_VABI ustr_hashUCharsN_nid_postfix(const char16_t*, std::int32_t);
-}
+
 
 namespace {
 
