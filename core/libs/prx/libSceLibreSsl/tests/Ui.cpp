@@ -1,4 +1,8 @@
-#include "SceTypes.hpp"
+#include "prx/libSceLibreSsl/libSceLibreSsl.hpp"
+#include "prx/libc/include/ApplicationHeap.hpp"
+#include <stdexcept>
+#include <unordered_map>
+#include <exception>
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -6,34 +10,43 @@
 #include <cstdlib>
 #include <cstring>
 
-struct LibreSslUi { int value; };
-struct LibreSslUiString { int value; };
-using UiOpener = int (APS5_VABI *)(LibreSslUi*);
-using UiWriter = int (APS5_VABI *)(LibreSslUi*, LibreSslUiString*);
-
-struct LibreSslUiMethod {
-    char* name;
-    UiOpener opener;
-    UiWriter writer;
-    UiOpener flusher;
-    UiWriter reader;
-    UiOpener closer;
-    char* (APS5_VABI *promptConstructor)(LibreSslUi*, const char*, const char*);
-};
-
-static_assert(sizeof(LibreSslUiMethod) == 56);
-static_assert(offsetof(LibreSslUiMethod, reader) == 32);
-static_assert(offsetof(LibreSslUiMethod, closer) == 40);
-
-extern "C" {
-UiOpener APS5_VABI UI_method_get_closer_nid_postfix(LibreSslUiMethod*);
-UiWriter APS5_VABI UI_method_get_reader_nid_postfix(LibreSslUiMethod*);
-UiWriter APS5_VABI UI_method_get_writer_nid_postfix(LibreSslUiMethod*);
-int APS5_VABI UI_method_set_closer_nid_postfix(LibreSslUiMethod*, UiOpener);
-int APS5_VABI UI_method_set_reader_nid_postfix(LibreSslUiMethod*, UiWriter);
-}
-
 namespace {
+
+struct TestUi { int value; };
+struct TestUiString { int value; };
+
+std::unordered_map<void*, std::size_t> owned;
+bool failMethod = false;
+bool failName = false;
+
+void* APS5_VABI Allocate(std::size_t size) {
+    if (failName) { failName = false; return nullptr; }
+    auto* pointer = std::malloc(size);
+    if (pointer) owned.emplace(pointer, size);
+    return pointer;
+}
+void* APS5_VABI Calloc(std::size_t count, std::size_t size) {
+    if (failMethod) { failMethod = false; return nullptr; }
+    auto* pointer = std::calloc(count, size);
+    if (pointer) owned.emplace(pointer, count * size);
+    return pointer;
+}
+void APS5_VABI Free(void* pointer) {
+    if (!pointer) return;
+    if (owned.erase(pointer) != 1) std::abort();
+    std::free(pointer);
+}
+void* APS5_VABI UnexpectedRealloc(void*, std::size_t) { std::abort(); }
+void* APS5_VABI UnexpectedAlign(std::size_t, std::size_t) { std::abort(); }
+void* APS5_VABI UnexpectedRealign(void*, std::size_t, std::size_t) { std::abort(); }
+int APS5_VABI UnexpectedPosixAlign(void**, std::size_t, std::size_t) { std::abort(); }
+
+void InstallAllocator() {
+    void* api[10]{reinterpret_cast<void*>(Allocate), reinterpret_cast<void*>(Free), reinterpret_cast<void*>(Calloc),
+        reinterpret_cast<void*>(UnexpectedRealloc), reinterpret_cast<void*>(UnexpectedAlign), reinterpret_cast<void*>(UnexpectedRealign),
+        reinterpret_cast<void*>(UnexpectedPosixAlign), nullptr, nullptr, nullptr};
+    ApplicationHeapRegister_nid_no_patch(api);
+}
 
 int invocations = 0;
 
@@ -43,10 +56,10 @@ void Require(bool condition, const char* message) {
     std::abort();
 }
 
-int APS5_VABI SessionFirst(LibreSslUi* ui) { ++invocations; return ui->value + 7; }
-int APS5_VABI SessionSecond(LibreSslUi* ui) { ++invocations; return -ui->value; }
-int APS5_VABI StringFirst(LibreSslUi* ui, LibreSslUiString* text) { ++invocations; return ui->value - text->value; }
-int APS5_VABI StringSecond(LibreSslUi* ui, LibreSslUiString* text) { ++invocations; return ui->value + 2 * text->value; }
+int APS5_VABI SessionFirst(LibreSslUi* ui) { ++invocations; return reinterpret_cast<TestUi*>(ui)->value + 7; }
+int APS5_VABI SessionSecond(LibreSslUi* ui) { ++invocations; return -reinterpret_cast<TestUi*>(ui)->value; }
+int APS5_VABI StringFirst(LibreSslUi* ui, LibreSslUiString* text) { ++invocations; return reinterpret_cast<TestUi*>(ui)->value - reinterpret_cast<TestUiString*>(text)->value; }
+int APS5_VABI StringSecond(LibreSslUi* ui, LibreSslUiString* text) { ++invocations; return reinterpret_cast<TestUi*>(ui)->value + 2 * reinterpret_cast<TestUiString*>(text)->value; }
 char* APS5_VABI Prompt(LibreSslUi*, const char* text, const char*) { ++invocations; return const_cast<char*>(text); }
 
 struct GuardedMethod {
@@ -74,8 +87,10 @@ void RoundTripCallbacks() {
     constexpr std::array<UiOpener, 3> sessions{nullptr, SessionFirst, SessionSecond};
     constexpr std::array<UiWriter, 3> strings{nullptr, StringFirst, StringSecond};
     char name[] = "guest method";
-    LibreSslUi ui{83};
-    LibreSslUiString text{19};
+    TestUi testUi{83};
+    auto& ui = *reinterpret_cast<LibreSslUi*>(&testUi);
+    TestUiString testText{19};
+    auto& text = *reinterpret_cast<LibreSslUiString*>(&testText);
     for (const auto initialReader : strings) {
         for (const auto initialWriter : strings) {
             for (const auto initialCloser : sessions) {
@@ -110,10 +125,51 @@ void RoundTripCallbacks() {
     }
 }
 
+void Lifecycle() {
+    Require(UI_method_get_opener_nid_postfix(nullptr) == nullptr, "null opener getter");
+    Require(UI_method_set_opener_nid_postfix(nullptr, SessionFirst) == -1, "null opener setter");
+    Require(UI_method_set_writer_nid_postfix(nullptr, StringFirst) == -1, "null writer setter");
+    for (const bool withName : {false, true}) {
+        char name[] = "owned method";
+        auto* method = UI_create_method_nid_postfix(withName ? name : nullptr);
+        Require(method && (method->name != nullptr) == withName, "method allocation or optional name");
+        Require(!method->opener && !method->writer && !method->reader && !method->flusher && !method->closer && !method->promptConstructor, "method slots were not cleared");
+        if (withName) {
+            Require(method->name != name && std::strcmp(method->name, name) == 0, "method name was not copied");
+            name[0] = 'X';
+            Require(method->name[0] == 'o', "method name retained caller storage");
+        }
+        const auto before = invocations;
+        Require(UI_method_set_opener_nid_postfix(method, SessionFirst) == 0 && UI_method_get_opener_nid_postfix(method) == SessionFirst, "opener roundtrip");
+        Require(UI_method_set_writer_nid_postfix(method, StringSecond) == 0 && UI_method_get_writer_nid_postfix(method) == StringSecond, "writer roundtrip");
+        Require(invocations == before, "method setup called callbacks");
+        TestUi ui{83}; TestUiString text{19};
+        Require(UI_method_get_opener_nid_postfix(method)(reinterpret_cast<LibreSslUi*>(&ui)) == 90, "opener callback invocation");
+        Require(UI_method_get_writer_nid_postfix(method)(reinterpret_cast<LibreSslUi*>(&ui), reinterpret_cast<LibreSslUiString*>(&text)) == 121, "writer callback invocation");
+        Require(UI_method_set_opener_nid_postfix(method, nullptr) == 0 && UI_method_set_writer_nid_postfix(method, nullptr) == 0 && !method->opener && !method->writer, "callback clearing");
+        UI_destroy_method_nid_postfix(method);
+        Require(owned.empty(), "method destruction leaked name or object");
+    }
+    char name[] = "failure";
+    failMethod = true;
+    Require(!UI_create_method_nid_postfix(name) && owned.empty(), "method allocation failure");
+    failName = true;
+    auto* method = UI_create_method_nid_postfix(name);
+    Require(method && !method->name && owned.size() == 1, "name failure discarded usable method");
+    Require(UI_method_set_opener_nid_postfix(method, SessionFirst) == 0, "method remained unusable after name failure");
+    UI_destroy_method_nid_postfix(method);
+    Require(owned.empty(), "name failure cleanup");
+    bool rejected = false;
+    try { UI_destroy_method_nid_postfix(nullptr); } catch (const std::exception&) { rejected = true; }
+    Require(rejected, "null destruction did not throw");
+}
+
 } // namespace
 
 int main() {
+    InstallAllocator();
     NullMethods();
     RoundTripCallbacks();
+    Lifecycle();
     return 0;
 }

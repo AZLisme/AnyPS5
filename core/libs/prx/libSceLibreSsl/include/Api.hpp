@@ -51,6 +51,22 @@ struct Sha512Context {
     std::uint32_t num, mdLength;
 };
 
+struct LibreSslUi;
+struct LibreSslUiString;
+using UiOpener = int (APS5_VABI *)(LibreSslUi*);
+using UiWriter = int (APS5_VABI *)(LibreSslUi*, LibreSslUiString*);
+
+struct LibreSslUiMethod {
+    char* name;
+    UiOpener opener;
+    UiWriter writer;
+    UiOpener flusher;
+    UiWriter reader;
+    UiOpener closer;
+    char* (APS5_VABI *promptConstructor)(LibreSslUi*, const char*, const char*);
+};
+
+
 extern "C" {
 
 std::int64_t APS5_VABI ASN1_INTEGER_get_nid_postfix(const Asn1String* value);
@@ -344,19 +360,19 @@ int APS5_VABI SSLv23_client_method_nid_postfix(void);
 int APS5_VABI SSLv23_server_method_nid_postfix(void);
 int APS5_VABI TLS_client_method_nid_postfix(void);
 int APS5_VABI UI_OpenSSL_nid_postfix(void);
-int APS5_VABI UI_create_method_nid_postfix(void);
-int APS5_VABI UI_destroy_method_nid_postfix(void);
+LibreSslUiMethod* APS5_VABI UI_create_method_nid_postfix(char* name);
+void APS5_VABI UI_destroy_method_nid_postfix(LibreSslUiMethod* method);
 int APS5_VABI UI_get0_user_data_nid_postfix(void);
 int APS5_VABI UI_get_input_flags_nid_postfix(void);
 int APS5_VABI UI_get_string_type_nid_postfix(void);
-int APS5_VABI UI_method_get_closer_nid_postfix(void);
-int APS5_VABI UI_method_get_opener_nid_postfix(void);
-int APS5_VABI UI_method_get_reader_nid_postfix(void);
-int APS5_VABI UI_method_get_writer_nid_postfix(void);
-int APS5_VABI UI_method_set_closer_nid_postfix(void);
-int APS5_VABI UI_method_set_opener_nid_postfix(void);
-int APS5_VABI UI_method_set_reader_nid_postfix(void);
-int APS5_VABI UI_method_set_writer_nid_postfix(void);
+UiOpener APS5_VABI UI_method_get_closer_nid_postfix(LibreSslUiMethod* method);
+UiOpener APS5_VABI UI_method_get_opener_nid_postfix(LibreSslUiMethod* method);
+UiWriter APS5_VABI UI_method_get_reader_nid_postfix(LibreSslUiMethod* method);
+UiWriter APS5_VABI UI_method_get_writer_nid_postfix(LibreSslUiMethod* method);
+int APS5_VABI UI_method_set_closer_nid_postfix(LibreSslUiMethod* method, UiOpener closer);
+int APS5_VABI UI_method_set_opener_nid_postfix(LibreSslUiMethod* method, UiOpener opener);
+int APS5_VABI UI_method_set_reader_nid_postfix(LibreSslUiMethod* method, UiWriter reader);
+int APS5_VABI UI_method_set_writer_nid_postfix(LibreSslUiMethod* method, UiWriter writer);
 int APS5_VABI UI_set_result_nid_postfix(void);
 int APS5_VABI X509V3_EXT_print_nid_postfix(void);
 int APS5_VABI X509_EXTENSION_get_critical_nid_postfix(void);
