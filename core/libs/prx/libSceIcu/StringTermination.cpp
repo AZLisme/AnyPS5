@@ -1,3 +1,4 @@
+#include "prx/libSceIcu/libSceIcu.hpp"
 #include "ConversionBuffers.hpp"
 
 extern "C" {

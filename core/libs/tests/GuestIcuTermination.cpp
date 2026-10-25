@@ -1,3 +1,4 @@
+#include "prx/libSceIcu/libSceIcu.hpp"
 #include "prx/libc/include/general/VabiMacros.hpp"
 #include <array>
 #include <cstdint>
@@ -5,12 +6,7 @@
 #include <cstdlib>
 #include <stdexcept>
 
-extern "C" {
-std::int32_t APS5_VABI u_terminateChars_nid_postfix(char*, std::int32_t, std::int32_t, std::int32_t*);
-std::int32_t APS5_VABI u_terminateUChars_nid_postfix(char16_t*, std::int32_t, std::int32_t, std::int32_t*);
-std::int32_t APS5_VABI u_terminateUChar32s_nid_postfix(std::int32_t*, std::int32_t, std::int32_t, std::int32_t*);
-std::int32_t APS5_VABI u_terminateWChars_nid_postfix(std::uint16_t*, std::int32_t, std::int32_t, std::int32_t*);
-}
+
 
 static void Require(bool value, const char* message) {
     if (!value) { std::fprintf(stderr, "ICU termination: %s\n", message); std::abort(); }
