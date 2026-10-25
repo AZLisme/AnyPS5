@@ -32,6 +32,7 @@ static unsigned initCount;
 static unsigned cleanupCount;
 static std::uint64_t cleanupFlags;
 static bool clearKeyContext;
+static bool installEngine;
 
 static int APS5_VABI CustomInit(DigestContext* context) {
     ++initCount;
@@ -46,6 +47,7 @@ static int APS5_VABI CustomCleanup(DigestContext* context) {
     ++cleanupCount;
     context->flags |= cleanupFlags;
     if (clearKeyContext) context->keyContext = nullptr;
+    if (installEngine) context->engine = context;
     return 0;
 }
 
@@ -103,6 +105,7 @@ static void Methods() {
     for (const auto* method : {sha1, sha224}) {
         Require(method->flags == 8 && method->blockSize == 64);
         Require(!method->copy && !method->cleanup && !method->control);
+        Require(!method->sign && !method->verify && method->requiredKeyTypes[0] == 6 && method->requiredKeyTypes[1] == 19);
         Throws([&] { method->init(nullptr); });
         DigestContext noData{};
         noData.digest = method;
@@ -154,8 +157,15 @@ static void Ownership() {
     DigestContext saved = *context;
     Throws([&] { EVP_DigestInit_nid_postfix(context, &foreign); });
     Require(std::memcmp(context, &saved, sizeof(saved)) == 0);
+    EVP_MD_CTX_free_nid_postfix(context);
+    context = EVP_MD_CTX_new_nid_postfix();
+    context->digest = &foreign;
+    context->data = malloc_nid_postfix(1);
+    saved = *context;
     Throws([&] { EVP_MD_CTX_free_nid_postfix(context); });
     Require(std::memcmp(context, &saved, sizeof(saved)) == 0);
+    free_nid_postfix(context->data);
+    context->data = nullptr;
     context->digest = nullptr;
     context->flags = 0;
     context->keyContext = context;
@@ -163,6 +173,11 @@ static void Ownership() {
     Throws([&] { EVP_MD_CTX_free_nid_postfix(context); });
     Require(std::memcmp(context, &saved, sizeof(saved)) == 0);
     context->keyContext = nullptr;
+    context->engine = context;
+    saved = *context;
+    Throws([&] { EVP_MD_CTX_free_nid_postfix(context); });
+    Require(std::memcmp(context, &saved, sizeof(saved)) == 0);
+    context->engine = nullptr;
     EVP_MD_CTX_free_nid_postfix(context);
     Throws([&] { EVP_DigestInit_nid_postfix(nullptr, EVP_sha1_nid_postfix()); });
     DigestContext stack{};
@@ -187,7 +202,7 @@ static void AllocationAndClearing() {
 }
 
 static void CustomMethods() {
-    DigestMethod method{999, 0, 7, 0, CustomInit, nullptr, nullptr, nullptr, CustomCleanup, 8, 17, nullptr};
+    DigestMethod method{999, 0, 7, 0, CustomInit, nullptr, nullptr, nullptr, CustomCleanup, nullptr, nullptr, {}, 8, 17, nullptr};
     auto* context = EVP_MD_CTX_new_nid_postfix();
     Require(EVP_DigestInit_nid_postfix(context, &method) == 0 && initCount == 1);
     expectedCleared = {{{context->data, 17}, {context, sizeof(*context)}}};
@@ -225,6 +240,16 @@ static void CustomMethods() {
     EVP_MD_CTX_free_nid_postfix(context);
     Require(cleanupCount == 4);
     clearKeyContext = false;
+
+    context = EVP_MD_CTX_new_nid_postfix();
+    Require(EVP_DigestInit_nid_postfix(context, &method) == 19);
+    installEngine = true;
+    Throws([&] { EVP_MD_CTX_free_nid_postfix(context); });
+    Require(context->engine == context);
+    installEngine = false;
+    context->engine = nullptr;
+    context->flags |= 2;
+    EVP_MD_CTX_free_nid_postfix(context);
 }
 
 int main() {

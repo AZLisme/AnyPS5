@@ -44,8 +44,8 @@ int APS5_VABI Sha224Final(DigestContext* context, unsigned char* digest) {
     return SHA224_Final_nid_postfix(digest, static_cast<Sha256Context*>(RequireData(context, __func__)));
 }
 
-constexpr DigestMethod Sha1{64, 65, 20, 8, Sha1Init, Sha1Update, Sha1Final, nullptr, nullptr, 64, 104, nullptr};
-constexpr DigestMethod Sha224{675, 671, 28, 8, Sha224Init, Sha224Update, Sha224Final, nullptr, nullptr, 64, 120, nullptr};
+constexpr DigestMethod Sha1{64, 65, 20, 8, Sha1Init, Sha1Update, Sha1Final, nullptr, nullptr, nullptr, nullptr, {6, 19, 0, 0, 0}, 64, 104, nullptr};
+constexpr DigestMethod Sha224{675, 671, 28, 8, Sha224Init, Sha224Update, Sha224Final, nullptr, nullptr, nullptr, nullptr, {6, 19, 0, 0, 0}, 64, 120, nullptr};
 
 void Clear(void* memory, std::size_t size) {
     auto* bytes = static_cast<volatile unsigned char*>(memory);
@@ -70,11 +70,12 @@ DigestContext* APS5_VABI EVP_MD_CTX_new_nid_postfix() {
 
 void APS5_VABI EVP_MD_CTX_free_nid_postfix(DigestContext* context) {
     if (!context) return;
-    if (context->digest && context->digest->contextSize < 0) NotImplemented_nid_no_patch(__func__);
+    if (context->engine) NotImplemented_nid_no_patch(__func__);
     if (context->digest && context->digest->cleanup && !(context->flags & Cleaned)) context->digest->cleanup(context);
+    if (context->engine) NotImplemented_nid_no_patch(__func__);
     if (context->keyContext && !(context->flags & KeepKeyContext)) NotImplemented_nid_no_patch(__func__);
-    if (context->digest && context->digest->contextSize < 0) NotImplemented_nid_no_patch(__func__);
     if (context->digest && context->digest->contextSize && context->data && !(context->flags & Reuse)) {
+        if (context->digest->contextSize < 0) NotImplemented_nid_no_patch(__func__);
         Clear(context->data, static_cast<std::size_t>(context->digest->contextSize));
         free_nid_postfix(context->data);
     }
