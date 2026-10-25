@@ -1,17 +1,8 @@
-#include "EvpDigest.hpp"
+#include "prx/libSceLibreSsl3/libSceLibreSsl3.hpp"
+#include "prx/libc/libc.hpp"
 #include "prx/libc/include/General.hpp"
 #include <cstring>
 
-extern "C" {
-void* APS5_VABI calloc_nid_postfix(std::size_t, std::size_t);
-void APS5_VABI free_nid_postfix(void*);
-int APS5_VABI SHA1_Init_nid_postfix(void*);
-int APS5_VABI SHA1_Update_nid_postfix(void*, const void*, std::size_t);
-int APS5_VABI SHA1_Final_nid_postfix(unsigned char*, void*);
-int APS5_VABI SHA224_Init_nid_postfix(void*);
-int APS5_VABI SHA256_Update_nid_postfix(void*, const void*, std::size_t);
-int APS5_VABI SHA224_Final_nid_postfix(unsigned char*, void*);
-}
 
 namespace {
 
@@ -28,29 +19,29 @@ void* RequireData(DigestContext* context, const char* function) {
 }
 
 int APS5_VABI Sha1Init(DigestContext* context) {
-    return SHA1_Init_nid_postfix(RequireData(context, __func__));
+    return SHA1_Init_nid_postfix(static_cast<Sha1Context*>(RequireData(context, __func__)));
 }
 
 int APS5_VABI Sha1Update(DigestContext* context, const void* data, std::size_t length) {
     if (context && !length) return 1;
-    return SHA1_Update_nid_postfix(RequireData(context, __func__), data, length);
+    return SHA1_Update_nid_postfix(static_cast<Sha1Context*>(RequireData(context, __func__)), data, length);
 }
 
 int APS5_VABI Sha1Final(DigestContext* context, unsigned char* digest) {
-    return SHA1_Final_nid_postfix(digest, RequireData(context, __func__));
+    return SHA1_Final_nid_postfix(digest, static_cast<Sha1Context*>(RequireData(context, __func__)));
 }
 
 int APS5_VABI Sha224Init(DigestContext* context) {
-    return SHA224_Init_nid_postfix(RequireData(context, __func__));
+    return SHA224_Init_nid_postfix(static_cast<Sha256Context*>(RequireData(context, __func__)));
 }
 
 int APS5_VABI Sha224Update(DigestContext* context, const void* data, std::size_t length) {
     if (context && !length) return 1;
-    return SHA256_Update_nid_postfix(RequireData(context, __func__), data, length);
+    return SHA256_Update_nid_postfix(static_cast<Sha256Context*>(RequireData(context, __func__)), data, length);
 }
 
 int APS5_VABI Sha224Final(DigestContext* context, unsigned char* digest) {
-    return SHA224_Final_nid_postfix(digest, RequireData(context, __func__));
+    return SHA224_Final_nid_postfix(digest, static_cast<Sha256Context*>(RequireData(context, __func__)));
 }
 
 constexpr DigestMethod Sha1{64, 65, 20, 8, Sha1Init, Sha1Update, Sha1Final, nullptr, nullptr, 64, 104, nullptr};

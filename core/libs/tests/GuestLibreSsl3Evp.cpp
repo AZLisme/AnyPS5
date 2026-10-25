@@ -1,4 +1,5 @@
-#include "prx/libSceLibreSsl3/src/EvpDigest.hpp"
+#include "prx/libSceLibreSsl3/libSceLibreSsl3.hpp"
+#include "prx/libc/libc.hpp"
 #include "prx/libc/include/ApplicationHeap.hpp"
 #include <algorithm>
 #include <array>
@@ -12,14 +13,6 @@
 using LibreSsl3::DigestContext;
 using LibreSsl3::DigestMethod;
 
-extern "C" {
-const DigestMethod* APS5_VABI EVP_sha1_nid_postfix();
-const DigestMethod* APS5_VABI EVP_sha224_nid_postfix();
-DigestContext* APS5_VABI EVP_MD_CTX_new_nid_postfix();
-void APS5_VABI EVP_MD_CTX_free_nid_postfix(DigestContext*);
-int APS5_VABI EVP_DigestInit_nid_postfix(DigestContext*, const DigestMethod*);
-void APS5_VABI free_nid_postfix(void*);
-}
 
 static void Require(bool value, std::source_location location = std::source_location::current()) {
     if (value) return;
