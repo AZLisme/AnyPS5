@@ -1,3 +1,4 @@
+#include "prx/libSceIcu/libSceIcu.hpp"
 #include "prx/libSceIcu/HashTable.hpp"
 #include "prx/libc/include/ApplicationHeap.hpp"
 #include <algorithm>
@@ -11,18 +12,7 @@
 
 using namespace IcuHash;
 
-extern "C" {
-Table* APS5_VABI uhash_open_nid_postfix(Hasher, Comparator, Comparator, std::int32_t*);
-void APS5_VABI uhash_close_nid_postfix(Table*);
-std::int32_t APS5_VABI uhash_count_nid_postfix(const Table*);
-void* APS5_VABI uhash_put_nid_postfix(Table*, void*, void*, std::int32_t*);
-void* APS5_VABI uhash_get_nid_postfix(const Table*, const void*);
-void* APS5_VABI uhash_remove_nid_postfix(Table*, const void*);
-void APS5_VABI uhash_removeAll_nid_postfix(Table*);
-const Element* APS5_VABI uhash_nextElement_nid_postfix(const Table*, std::int32_t*);
-Deleter APS5_VABI uhash_setKeyDeleter_nid_postfix(Table*, Deleter);
-Deleter APS5_VABI uhash_setValueDeleter_nid_postfix(Table*, Deleter);
-}
+
 
 static void Require(bool good, std::source_location location = std::source_location::current()) {
     if (good) return;

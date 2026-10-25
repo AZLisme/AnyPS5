@@ -1,15 +1,11 @@
 #pragma once
 
-#include "prx/libc/include/general/VabiMacros.hpp"
+#include "prx/libc/include/Api.hpp"
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
 
-extern "C" {
-void* APS5_VABI malloc_nid_postfix(std::size_t);
-void* APS5_VABI realloc_nid_postfix(void*, std::size_t);
-void APS5_VABI free_nid_postfix(void*);
-}
+
 
 namespace IcuMemory {
 

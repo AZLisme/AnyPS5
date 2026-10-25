@@ -1,33 +1,10 @@
+#include "prx/libSceIcu/libSceIcu.hpp"
 #include "HashTable.hpp"
 #include "Memory.hpp"
 #include "prx/libc/include/General.hpp"
 #include <array>
 #include <limits>
 
-namespace IcuHash {
-
-struct Table {
-    Element* elements;
-    Hasher hasher;
-    Comparator comparator;
-    Comparator valueComparator;
-    Deleter keyDeleter;
-    Deleter valueDeleter;
-    std::int32_t count;
-    std::int32_t length;
-    std::int32_t highWater;
-    std::int32_t lowWater;
-    float highRatio;
-    float lowRatio;
-    std::int8_t primeIndex;
-    std::int8_t allocated;
-};
-
-static_assert(sizeof(Table) == 80);
-static_assert(offsetof(Table, count) == 48);
-static_assert(offsetof(Table, primeIndex) == 72);
-
-} // namespace IcuHash
 
 namespace {
 
