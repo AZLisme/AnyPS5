@@ -4,6 +4,7 @@
 #include "prx/libc/include/GuestWriteWatch.hpp"
 #include "HevcFixture.hpp"
 #include "HevcMetadataFixture.hpp"
+#include <algorithm>
 #include <array>
 #include <cstdint>
 #include <cstdio>
@@ -12,8 +13,12 @@
 #include <stdexcept>
 #include <vector>
 #ifdef _WIN32
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif
 #include <windows.h>
 #endif
 
@@ -313,9 +318,17 @@ struct GuestMetadataMapping {
 
     void Protect(void* pointer, std::size_t bytes, std::uint32_t protection) {
 #ifdef _WIN32
-        for (std::size_t offset = 0; offset < bytes; offset += block) {
+        auto cursor = reinterpret_cast<std::uintptr_t>(pointer);
+        const auto end = cursor + bytes;
+        while (cursor < end) {
+            MEMORY_BASIC_INFORMATION region{};
+            Require(VirtualQuery(reinterpret_cast<void*>(cursor), &region, sizeof(region)) == sizeof(region), "query guest metadata section");
+            const auto regionEnd = reinterpret_cast<std::uintptr_t>(region.BaseAddress) + region.RegionSize;
+            Require(region.State == MEM_COMMIT && regionEnd > cursor, "guest metadata section is not committed");
+            const auto span = std::min(end - cursor, regionEnd - cursor);
             DWORD previous = 0;
-            Require(VirtualProtect(static_cast<unsigned char*>(pointer) + offset, block, protection, &previous), "protect guest metadata section");
+            Require(VirtualProtect(reinterpret_cast<void*>(cursor), span, protection, &previous), "protect guest metadata section");
+            cursor += span;
         }
 #endif
         GuestArena::GuestArenaSetProtection_nid_postfix(reinterpret_cast<std::uintptr_t>(pointer), bytes, protection);
