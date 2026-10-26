@@ -1,4 +1,5 @@
 #include "prx/libSceVideodec2/include/Api.hpp"
+#include "prx/libSceVideodec2/include/PictureMetadata.hpp"
 #include <array>
 #include <span>
 #include <cstdint>
@@ -29,6 +30,8 @@ extern "C" {
 namespace {
 
 using namespace SceVideodec2;
+using SceVideodec2::Internal::Crop;
+using SceVideodec2::Internal::PictureHeader;
 
 struct UnsupportedHevcMetadata {};
 
@@ -182,13 +185,6 @@ std::vector<Vp9Unit> ParseVp9Packet(std::span<const std::uint8_t> bytes, std::ar
     return result;
 }
 
-struct Crop {
-    std::uint32_t left = 0;
-    std::uint32_t right = 0;
-    std::uint32_t top = 0;
-    std::uint32_t bottom = 0;
-};
-
 struct Picture {
     std::uint64_t pts = 0;
     std::uint64_t dts = 0;
@@ -199,18 +195,6 @@ struct Picture {
     bool hevcIdr = false;
     std::uint8_t bitDepthMinus8 = 0;
     Videodec2Hevc::Metadata hevc;
-};
-
-struct PictureHeader {
-    std::uint64_t pts;
-    std::uint64_t dts;
-    std::uint64_t attached;
-    bool keyFrame;
-    bool hevcIdr;
-    std::uint32_t profile;
-    std::uint32_t level;
-    Crop crop;
-    std::uint8_t bitDepthMinus8;
 };
 
 struct FrameDeleter {
@@ -768,6 +752,18 @@ void Videodec2PictureCrop_nid_no_patch(std::uint64_t handle, const void* frameBu
     PictureHeader header{};
     Videodec2PictureHeader_nid_no_patch(handle, frameBuffer, &header);
     *crop = header.crop;
+}
+
+void Videodec2Vp9PictureInfo_nid_no_patch(std::uint64_t handle, const void* frameBuffer, Vp9PictureInfo* info) {
+    if (!info) throw std::runtime_error("Videodec2: invalid argument pointer");
+    const auto found = FindDecoder(handle);
+    if (!found) throw std::runtime_error("Videodec2: invalid decoder handle");
+    auto& decoder = *found;
+    std::lock_guard guard(decoder.mutex);
+    if (decoder.codec != CodecVp9) throw std::runtime_error("Videodec2: VP9 picture info requested for another codec");
+    const auto picture = decoder.pictures.find(frameBuffer);
+    if (picture == decoder.pictures.end()) throw std::runtime_error("Videodec2: unknown frame buffer");
+    *info = picture->second.vp9;
 }
 
 }
