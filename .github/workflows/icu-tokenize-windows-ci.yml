@@ -1,0 +1,157 @@
+name: ICU Tokenize Windows CI
+
+on:
+  push:
+    branches: [ci/icu-tokenize-windows-20261026]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: icu-tokenize-windows-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CONFIGURE: >-
+    -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
+    -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++
+    -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+    -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+
+jobs:
+  icu-tokenize-windows:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 2
+      - name: Assert exact fixed parent and workflow-only changes
+        run: |
+          set -euo pipefail
+          expected=0b404628b704d3ec87be272d17ffe44b6d318316
+          test "$GITHUB_EVENT_NAME" = push
+          test "$GITHUB_REF" = refs/heads/ci/icu-tokenize-windows-20261026
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$(git rev-parse HEAD^)" = "$expected"
+          test "$(git diff-tree --no-commit-id --name-only -r HEAD)" = .github/workflows/icu-tokenize-windows-ci.yml
+          git diff --exit-code "$expected" HEAD -- core cmake CMakeLists.txt 3rdparty .gitmodules
+          git log -2 --format=fuller
+          git ls-tree HEAD core cmake CMakeLists.txt 3rdparty .gitmodules
+      - id: submodules
+        name: Key the submodules on their commits
+        run: |
+          echo "key=$(git ls-files -s | awk '$1 == "160000" { print $2, $4 }' | cat - .gitmodules | sha256sum | cut -c1-16)" >> "$GITHUB_OUTPUT"
+          echo "ffmpeg=$(git rev-parse HEAD:3rdparty/ffmpeg-core)" >> "$GITHUB_OUTPUT"
+      - id: submodule-cache
+        uses: actions/cache/restore@v6
+        with:
+          path: ${{ runner.temp }}/submodule-gitdirs.tar
+          key: submodule-gitdirs-${{ runner.os }}-${{ steps.submodules.outputs.key }}
+      - name: Check out the submodules
+        run: |
+          if [ -f "$RUNNER_TEMP/submodule-gitdirs.tar" ]; then tar --force-local -xf "$RUNNER_TEMP/submodule-gitdirs.tar"; fi
+          git submodule update --init --recursive --depth 1 --jobs 8
+      - if: steps.submodule-cache.outputs.cache-hit != 'true'
+        run: tar --force-local -cf "$RUNNER_TEMP/submodule-gitdirs.tar" .git/modules
+      - if: steps.submodule-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        continue-on-error: true
+        with:
+          path: ${{ runner.temp }}/submodule-gitdirs.tar
+          key: submodule-gitdirs-${{ runner.os }}-${{ steps.submodules.outputs.key }}
+      - name: Use the CA bundle of Git for Windows
+        run: |
+          for prefix in ucrt64 mingw64; do
+            bundle="C:/Program Files/Git/$prefix/etc/ssl/certs/ca-bundle.crt"
+            if [ -f "$bundle" ]; then echo "SSL_CERT_FILE=$bundle" >> "$GITHUB_ENV"; exit 0; fi
+          done
+          echo "::error::No CA bundle found in Git for Windows"; exit 1
+      - id: msys2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-ninja
+      - shell: pwsh
+        env:
+          MSYS2_LOCATION: ${{ steps.msys2.outputs.msys2-location }}
+        run: Add-Content -LiteralPath $env:GITHUB_PATH -Value "$env:MSYS2_LOCATION\ucrt64\bin"
+      - uses: hendrikmuhs/ccache-action@v1.2.24
+        with:
+          key: icu-tokenize-windows
+          save: false
+          evict-old-files: job
+      - name: Record toolchain and pinned checkouts
+        run: |
+          gcc --version
+          g++ --version
+          cmake --version
+          ninja --version
+          git --version
+          git submodule status --recursive
+      - id: ffmpeg-cache
+        uses: actions/cache/restore@v6
+        with:
+          path: build/externals
+          key: ffmpeg-${{ runner.os }}-${{ steps.submodules.outputs.ffmpeg }}
+      - shell: cmd
+        run: cmake -S . -B build %CONFIGURE%
+      - if: steps.ffmpeg-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        continue-on-error: true
+        with:
+          path: build/externals
+          key: ${{ steps.ffmpeg-cache.outputs.cache-primary-key }}
+      - name: Check that every test executable is registered with ctest
+        shell: cmd
+        run: python tools/check_test_registration.py build
+      - name: Build the actual module, core dependencies and the existing tokenizer fixture
+        shell: cmd
+        run: cmake --build build --target guest_icu_tokenize_tests --parallel 2 --verbose
+      - name: Run the focused Windows tokenizer test twice
+        id: tests
+        shell: cmd
+        working-directory: build
+        run: ctest -R "^guest_icu_tokenize$" --no-tests=error --repeat until-fail:2 -V --output-on-failure --output-log ctest.log --output-junit ctest.xml
+      - name: Require the passing tokenizer test to execute twice
+        run: |
+          python - <<'PYTHON'
+          import pathlib
+          import re
+          import xml.etree.ElementTree as ET
+
+          expected = {"guest_icu_tokenize"}
+          root = ET.parse("build/ctest.xml").getroot()
+          if root.tag not in {"testsuite", "testsuites"}:
+              raise SystemExit("Unexpected JUnit root")
+          cases = list(root.iter("testcase"))
+          if len(cases) != 1 or {case.get("name") for case in cases} != expected:
+              raise SystemExit("JUnit must contain exactly the focused tokenizer test")
+          for case in cases:
+              if case.get("status") != "run" or any(case.find(tag) is not None for tag in ("failure", "error", "skipped")):
+                  raise SystemExit(f"Focused test did not pass: {case.get('name')}")
+          log = pathlib.Path("build/ctest.log").read_text(encoding="utf-8", errors="strict")
+          for name in sorted(expected):
+              starts = re.findall(r"^\s*Start\s+\d+: " + re.escape(name) + r"\s*$", log, re.MULTILINE)
+              if len(starts) != 2:
+                  raise SystemExit(f"Expected two executions of {name}, got {len(starts)}")
+          print("The focused tokenizer test passed twice, with no skips")
+          PYTHON
+      - uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() }}
+        with:
+          name: icu-tokenize-windows-tests
+          path: |
+            build/ctest.log
+            build/ctest.xml
+            build/compile_commands.json
+          if-no-files-found: ignore
