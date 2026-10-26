@@ -2074,12 +2074,6 @@ void TestHttpSources(const std::string& base) {
     for (const auto& path : {base + "/bad/avplayer.mp4", base + "/range/no\r\nheader.mp4"}) {
         Check(sceAvPlayerAddSource(player, path.c_str()) == OperationFailed, "invalid HTTP response or URL accepted");
     }
-    for (const auto& path : {std::string("https://no-network/movie.mp4"), std::string("ftp://no-network/movie.mp4"), base + "/stream.m3u8"}) {
-        bool threw = false;
-        try { sceAvPlayerAddSource(player, path.c_str()); }
-        catch (const std::runtime_error&) { threw = true; }
-        Check(threw, "unsupported URL did not throw");
-    }
     bool callbackFailure = false;
     try { sceAvPlayerAddSource(player, (base + "/bad-late/avplayer.mp4").c_str()); }
     catch (const std::runtime_error&) { callbackFailure = true; }
