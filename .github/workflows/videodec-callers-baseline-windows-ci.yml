@@ -1,0 +1,177 @@
+name: Videodec Callers Baseline Windows CI
+
+on:
+  push:
+    branches: [ci/videodec-callers-baseline-windows-20261026]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: videodec-callers-baseline-windows-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CONFIGURE: >-
+    -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
+    -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++
+    -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+    -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+
+jobs:
+  hevc-windows:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 2
+      - name: Assert exact published parent and workflow-only changes
+        run: |
+          set -euo pipefail
+          expected=d6fd16ec67d3860984f3bbe746c2ce5a32930d20
+          test "$GITHUB_EVENT_NAME" = push
+          test "$GITHUB_REF" = refs/heads/ci/videodec-callers-baseline-windows-20261026
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$(git rev-list --parents -n 1 HEAD | wc -w)" = 2
+          test "$(git rev-parse HEAD^)" = "$expected"
+          test "$(git diff-tree --no-commit-id --name-only -r HEAD)" = .github/workflows/videodec-callers-baseline-windows-ci.yml
+          git diff --exit-code "$expected" HEAD -- core cmake CMakeLists.txt 3rdparty .gitmodules
+          git log -2 --format=fuller
+          git ls-tree HEAD core cmake CMakeLists.txt 3rdparty .gitmodules
+      - id: submodules
+        name: Key the submodules on their commits
+        run: |
+          echo "key=$(git ls-files -s | awk '$1 == "160000" { print $2, $4 }' | cat - .gitmodules | sha256sum | cut -c1-16)" >> "$GITHUB_OUTPUT"
+          echo "ffmpeg=$(git rev-parse HEAD:3rdparty/ffmpeg-core)" >> "$GITHUB_OUTPUT"
+      - id: submodule-cache
+        uses: actions/cache/restore@v6
+        with:
+          path: ${{ runner.temp }}/submodule-gitdirs.tar
+          key: submodule-gitdirs-${{ runner.os }}-${{ steps.submodules.outputs.key }}
+      - name: Check out the submodules
+        run: |
+          if [ -f "$RUNNER_TEMP/submodule-gitdirs.tar" ]; then tar --force-local -xf "$RUNNER_TEMP/submodule-gitdirs.tar"; fi
+          git submodule update --init --recursive --depth 1 --jobs 8
+      - if: steps.submodule-cache.outputs.cache-hit != 'true'
+        run: tar --force-local -cf "$RUNNER_TEMP/submodule-gitdirs.tar" .git/modules
+      - if: steps.submodule-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        continue-on-error: true
+        with:
+          path: ${{ runner.temp }}/submodule-gitdirs.tar
+          key: submodule-gitdirs-${{ runner.os }}-${{ steps.submodules.outputs.key }}
+      - name: Use the CA bundle of Git for Windows
+        run: |
+          for prefix in ucrt64 mingw64; do
+            bundle="C:/Program Files/Git/$prefix/etc/ssl/certs/ca-bundle.crt"
+            if [ -f "$bundle" ]; then echo "SSL_CERT_FILE=$bundle" >> "$GITHUB_ENV"; exit 0; fi
+          done
+          echo "::error::No CA bundle found in Git for Windows"; exit 1
+      - id: msys2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-ninja
+      - shell: pwsh
+        env:
+          MSYS2_LOCATION: ${{ steps.msys2.outputs.msys2-location }}
+        run: Add-Content -LiteralPath $env:GITHUB_PATH -Value "$env:MSYS2_LOCATION\ucrt64\bin"
+      - uses: hendrikmuhs/ccache-action@v1.2.24
+        with:
+          key: videodec-callers-baseline-windows
+          save: false
+          evict-old-files: job
+      - name: Record toolchain and pinned checkouts
+        run: |
+          printf "ImageOS=%s\nImageVersion=%s\nRunnerOS=%s\n" "$ImageOS" "$ImageVersion" "$RUNNER_OS"
+          cmd.exe //c ver
+          gcc --version
+          g++ --version
+          cmake --version
+          ninja --version
+          git --version
+          git submodule status --recursive
+      - id: ffmpeg-cache
+        uses: actions/cache/restore@v6
+        with:
+          path: build/externals
+          key: ffmpeg-${{ runner.os }}-${{ steps.submodules.outputs.ffmpeg }}
+      - shell: cmd
+        run: cmake -S . -B build %CONFIGURE%
+      - if: steps.ffmpeg-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        continue-on-error: true
+        with:
+          path: build/externals
+          key: ${{ steps.ffmpeg-cache.outputs.cache-primary-key }}
+      - name: Check that every test executable is registered with ctest
+        shell: cmd
+        run: python tools/check_test_registration.py build
+      - name: Build the actual three modules, core dependencies and five existing fixtures
+        shell: cmd
+        run: cmake --build build --target libSceVideodec2 libSceVideodec libSceVdecsw guest_hevc_metadata_tests guest_videodec2_tests guest_videodec2_unimplemented_tests guest_videodec_tests guest_vdecsw_tests --parallel 2 --verbose
+      - name: Run all five focused Windows tests twice and retain any failure
+        id: tests
+        shell: cmd
+        working-directory: build
+        run: |
+          ctest -R "^(guest_hevc_metadata|guest_videodec2|guest_videodec2_unimplemented|guest_videodec|guest_vdecsw)$" --no-tests=error -V --output-on-failure --output-log ctest-1.log --output-junit ctest-1.xml
+          set FIRST_EXIT=%ERRORLEVEL%
+          ctest -R "^(guest_hevc_metadata|guest_videodec2|guest_videodec2_unimplemented|guest_videodec|guest_vdecsw)$" --no-tests=error -V --output-on-failure --output-log ctest-2.log --output-junit ctest-2.xml
+          set SECOND_EXIT=%ERRORLEVEL%
+          echo first=%FIRST_EXIT% > ctest-exit-codes.txt
+          echo second=%SECOND_EXIT% >> ctest-exit-codes.txt
+          type ctest-exit-codes.txt
+          if not "%FIRST_EXIT%"=="0" exit /b %FIRST_EXIT%
+          if not "%SECOND_EXIT%"=="0" exit /b %SECOND_EXIT%
+      - name: Require exactly five passing tests in each run, with no skips
+        run: |
+          python - <<'PYTHON'
+          import pathlib
+          import re
+          import xml.etree.ElementTree as ET
+
+          expected = {"guest_hevc_metadata", "guest_videodec2", "guest_videodec2_unimplemented", "guest_videodec", "guest_vdecsw"}
+          starts_total = {name: 0 for name in expected}
+          for attempt in (1, 2):
+              root = ET.parse(f"build/ctest-{attempt}.xml").getroot()
+              if root.tag not in {"testsuite", "testsuites"}:
+                  raise SystemExit("Unexpected JUnit root")
+              cases = list(root.iter("testcase"))
+              if len(cases) != 5 or {case.get("name") for case in cases} != expected:
+                  raise SystemExit("JUnit must contain exactly the five focused tests")
+              for case in cases:
+                  if case.get("status") != "run" or any(case.find(tag) is not None for tag in ("failure", "error", "skipped")):
+                      raise SystemExit(f"Focused test did not pass: {case.get('name')}")
+              log = pathlib.Path(f"build/ctest-{attempt}.log").read_text(encoding="utf-8", errors="strict")
+              for name in sorted(expected):
+                  starts = re.findall(r"^\s*Start\s+\d+: " + re.escape(name) + r"\s*$", log, re.MULTILINE)
+                  if len(starts) != 1:
+                      raise SystemExit(f"Expected one execution of {name} in run{attempt}, got {len(starts)}")
+                  starts_total[name] += len(starts)
+          if any(count != 2 for count in starts_total.values()):
+              raise SystemExit("Every focused test must execute exactly twice")
+          print("Exactly five focused tests passed twice, with no skips")
+          PYTHON
+      - uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() }}
+        with:
+          name: videodec-callers-baseline-windows-tests
+          path: |
+            build/ctest-1.log
+            build/ctest-1.xml
+            build/ctest-2.log
+            build/ctest-2.xml
+            build/ctest-exit-codes.txt
+            build/compile_commands.json
+          if-no-files-found: ignore
