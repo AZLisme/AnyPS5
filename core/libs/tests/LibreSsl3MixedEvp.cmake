@@ -1,3 +1,5 @@
+cmake_policy(SET CMP0054 NEW)
+
 file(MAKE_DIRECTORY "${WORK_DIR}")
 execute_process(COMMAND "${PATCHER}" --write-export-list "${LIBC}" "${WORK_DIR}/libc.exports"
     RESULT_VARIABLE status OUTPUT_VARIABLE output ERROR_VARIABLE error)
