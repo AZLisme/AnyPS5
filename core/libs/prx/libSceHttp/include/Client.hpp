@@ -3,7 +3,7 @@
 #include "prx/libc/include/general/VabiMacros.hpp"
 #include <cstdint>
 
-struct Aps5HttpClient;
+struct Aps5HttpClient {};
 
 extern "C" {
 

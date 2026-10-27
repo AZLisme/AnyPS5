@@ -316,9 +316,7 @@ private:
     std::atomic_bool& stop;
 };
 
-}
-
-struct Aps5HttpClient {
+struct HttpClientState : Aps5HttpClient {
     std::string url;
     std::string validator;
     std::string etag;
@@ -434,16 +432,14 @@ struct Aps5HttpClient {
 
 };
 
-namespace {
-
-Aps5HttpClient& Checked(Aps5HttpClient* client) {
+HttpClientState& Checked(Aps5HttpClient* client) {
     if (!client) throw std::invalid_argument("HTTP client is null");
-    return *client;
+    return *static_cast<HttpClientState*>(client);
 }
 
-const Aps5HttpClient& Checked(const Aps5HttpClient* client) {
+const HttpClientState& Checked(const Aps5HttpClient* client) {
     if (!client) throw std::invalid_argument("HTTP client is null");
-    return *client;
+    return *static_cast<const HttpClientState*>(client);
 }
 
 }
@@ -451,11 +447,11 @@ const Aps5HttpClient& Checked(const Aps5HttpClient* client) {
 extern "C" {
 
 Aps5HttpClient* APS5_VABI Aps5HttpClient_Create_nid_postfix() {
-    return new Aps5HttpClient;
+    return new HttpClientState;
 }
 
 void APS5_VABI Aps5HttpClient_Destroy_nid_postfix(Aps5HttpClient* client) {
-    delete client;
+    delete static_cast<HttpClientState*>(client);
 }
 
 std::int32_t APS5_VABI Aps5HttpClient_Open_nid_postfix(Aps5HttpClient* client, const char* url) {
