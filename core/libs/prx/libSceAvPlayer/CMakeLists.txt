@@ -34,27 +34,30 @@ if(BUILD_TESTING)
             add_test_executable(avplayer_http_patched_modules_tests ${LIBS_INCLUDE_DIR}/tests/AvPlayerHttpModules.cpp)
             target_link_libraries(avplayer_http_patched_modules_tests PRIVATE ${CMAKE_DL_LIBS})
             configure_windows_unwind(avplayer_http_patched_modules_tests)
-            set(httpPatchedDependencies
-                ${PATCHED_DIR}/libc.prx
-                ${PATCHED_DIR}/libkernel.prx
-                ${PATCHED_DIR}/libSceLibcInternal.prx
-                ${PATCHED_DIR}/libSceHttp.prx
-                ${PATCHED_DIR}/libSceAvPlayer.prx
-                ${PATCHED_DIR}/libSceAvPlayer.native.prx)
+            add_custom_target(avplayer_http_patched_closure)
+            add_dependencies(avplayer_http_patched_closure
+                libc libkernel libSceLibcInternal libSceHttp libSceAvPlayer libSceAvPlayer.native nid_patcher)
+            set(httpPatchedAllocatorArguments)
             if(WIN32 AND TARGET mimalloc)
-                list(APPEND httpPatchedDependencies
-                    ${PATCHED_DIR}/mimalloc.dll
-                    ${PATCHED_DIR}/mimalloc-redirect.dll)
+                add_dependencies(avplayer_http_patched_closure mimalloc pe_import_first)
+                set(httpPatchedAllocatorArguments
+                    -DALLOCATOR_DIRECTORY=$<TARGET_FILE_DIR:mimalloc>
+                    -DIMPORT_FIRST=$<TARGET_FILE:pe_import_first>)
             endif()
-            add_custom_target(avplayer_http_patched_closure DEPENDS ${httpPatchedDependencies})
             add_dependencies(avplayer_http_patched_modules_tests avplayer_http_patched_closure
                 guest_http_client_tests guest_avplayer_tests nid_patcher)
             add_test(NAME avplayer_http_patched_modules COMMAND ${CMAKE_COMMAND}
                 -DPYTHON=${Python3_EXECUTABLE}
                 -DSERVER=${LIBS_INCLUDE_DIR}/tests/AvPlayerHttpServer.py
                 -DPATCHER=$<TARGET_FILE:nid_patcher>
-                -DPATCHED_DIRECTORY=${PATCHED_DIR}
+                -DLIBC=$<TARGET_FILE:libc>
+                -DKERNEL=$<TARGET_FILE:libkernel>
+                -DINTERNAL=$<TARGET_FILE:libSceLibcInternal>
+                -DHTTP=$<TARGET_FILE:libSceHttp>
+                -DAVPLAYER=$<TARGET_FILE:libSceAvPlayer>
+                -DNATIVE=$<TARGET_FILE:libSceAvPlayer.native>
                 -DOBJDUMP=${CMAKE_OBJDUMP}
+                ${httpPatchedAllocatorArguments}
                 -DWORK_DIR=${CMAKE_CURRENT_BINARY_DIR}/avplayer_http_patched_modules
                 -P ${LIBS_INCLUDE_DIR}/tests/AvPlayerHttpModules.cmake
                 -- "$<TARGET_FILE:avplayer_http_patched_modules_tests>"
