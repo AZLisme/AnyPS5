@@ -8,3 +8,4 @@
 #include "Copy.hpp"
 #include "UtfConversions.hpp"
 #include "prx/libSceIcu/Api.hpp"
+#include "Search.hpp"

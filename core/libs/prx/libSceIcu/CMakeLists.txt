@@ -1,4 +1,4 @@
-add_library(libSceIcu SHARED EXCLUDE_FROM_ALL Export.cpp Invariant.cpp Version.cpp Unescape.cpp Tokenize.cpp Comparisons.cpp Copy.cpp UtfConversions.cpp)
+add_library(libSceIcu SHARED EXCLUDE_FROM_ALL Export.cpp Invariant.cpp Version.cpp Unescape.cpp Tokenize.cpp Comparisons.cpp Copy.cpp UtfConversions.cpp Search.cpp)
 target_include_directories(libSceIcu PRIVATE ${LIBS_INCLUDE_DIR})
 configure_windows_unwind(libSceIcu)
 
@@ -107,6 +107,19 @@ if(BUILD_TESTING)
     set_tests_properties(guest_icu_utf16 PROPERTIES TIMEOUT 10)
     if(WIN32)
         set_tests_properties(guest_icu_utf16 PROPERTIES ENVIRONMENT_MODIFICATION
+            "PATH=path_list_prepend:$<TARGET_FILE_DIR:libSceIcu>")
+    endif()
+endif()
+
+if(BUILD_TESTING)
+    add_test_executable(guest_icu_search_tests ${LIBS_INCLUDE_DIR}/tests/GuestIcuSearch.cpp)
+    target_include_directories(guest_icu_search_tests PRIVATE ${LIBS_INCLUDE_DIR})
+    target_link_libraries(guest_icu_search_tests PRIVATE libSceIcu libc libkernel)
+    configure_windows_unwind(guest_icu_search_tests)
+    add_test(NAME guest_icu_search COMMAND guest_icu_search_tests)
+    set_tests_properties(guest_icu_search PROPERTIES TIMEOUT 30)
+    if(WIN32)
+        set_tests_properties(guest_icu_search PROPERTIES ENVIRONMENT_MODIFICATION
             "PATH=path_list_prepend:$<TARGET_FILE_DIR:libSceIcu>")
     endif()
 endif()
