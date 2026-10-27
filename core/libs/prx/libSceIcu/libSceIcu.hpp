@@ -6,3 +6,4 @@
 #include "prx/libSceIcu/include/Api.hpp"
 #include "Api.hpp"
 #include "Copy.hpp"
+#include "UtfConversions.hpp"
