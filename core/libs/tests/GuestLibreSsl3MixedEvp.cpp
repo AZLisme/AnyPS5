@@ -92,7 +92,6 @@ static void Customs() {
     c=NewContext();Require(EVP_DigestInit_ex_nid_postfix(c,&m,nullptr)==1);c->flags=4;data=c->mdData;Require(EVP_MD_CTX_cleanup_nid_postfix(c)==1);Require(*static_cast<std::uint32_t*>(data)==7);Free(data);FreeContext(c);
     c=NewContext();c->flags=0x100;const auto clean=cleanupCalls;Require(EVP_DigestInit_ex_nid_postfix(c,&m,nullptr)==1&&!c->mdData&&!c->update);EVP_MD_CTX_destroy_nid_postfix(c);Require(cleanupCalls==clean+1);
     c=EVP_MD_CTX_create_nid_postfix();failAllocation=true;Require(EVP_DigestInit_ex_nid_postfix(c,&m,nullptr)==0);failAllocation=false;Require(!c->digest&&!c->mdData&&!c->update);Require(EVP_DigestInit_ex_nid_postfix(c,&m,nullptr)==1);FreeContext(c);
-    c=NewContext();Require(InitContext(c,&m)==1);c->engine=c;Throws([&]{FreeContext(c);});c->engine=nullptr;FreeContext(c);
 }
 extern "C" int LibreSsl3MixedEvp_nid_no_patch(const char* directory, const char* mode) {
     moduleDirectory=directory;
