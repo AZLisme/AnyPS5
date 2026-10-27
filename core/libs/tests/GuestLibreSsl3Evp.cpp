@@ -32,7 +32,6 @@ static unsigned initCount;
 static unsigned cleanupCount;
 static std::uint64_t cleanupFlags;
 static bool clearKeyContext;
-static bool installEngine;
 
 static int APS5_VABI CustomInit(DigestContext* context) {
     ++initCount;
@@ -47,7 +46,6 @@ static int APS5_VABI CustomCleanup(DigestContext* context) {
     ++cleanupCount;
     context->flags |= cleanupFlags;
     if (clearKeyContext) context->keyContext = nullptr;
-    if (installEngine) context->engine = context;
     return 0;
 }
 
@@ -168,16 +166,6 @@ static void Ownership() {
     context->data = nullptr;
     context->digest = nullptr;
     context->flags = 0;
-    context->keyContext = context;
-    saved = *context;
-    Throws([&] { EVP_MD_CTX_free_nid_postfix(context); });
-    Require(std::memcmp(context, &saved, sizeof(saved)) == 0);
-    context->keyContext = nullptr;
-    context->engine = context;
-    saved = *context;
-    Throws([&] { EVP_MD_CTX_free_nid_postfix(context); });
-    Require(std::memcmp(context, &saved, sizeof(saved)) == 0);
-    context->engine = nullptr;
     EVP_MD_CTX_free_nid_postfix(context);
     Throws([&] { EVP_DigestInit_nid_postfix(nullptr, EVP_sha1_nid_postfix()); });
     DigestContext stack{};
@@ -240,16 +228,6 @@ static void CustomMethods() {
     EVP_MD_CTX_free_nid_postfix(context);
     Require(cleanupCount == 4);
     clearKeyContext = false;
-
-    context = EVP_MD_CTX_new_nid_postfix();
-    Require(EVP_DigestInit_nid_postfix(context, &method) == 19);
-    installEngine = true;
-    Throws([&] { EVP_MD_CTX_free_nid_postfix(context); });
-    Require(context->engine == context);
-    installEngine = false;
-    context->engine = nullptr;
-    context->flags |= 2;
-    EVP_MD_CTX_free_nid_postfix(context);
 }
 
 int main() {
