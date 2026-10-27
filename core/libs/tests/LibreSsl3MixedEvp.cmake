@@ -1,4 +1,10 @@
 cmake_policy(SET CMP0054 NEW)
+math(EXPR loaderIndex "${CMAKE_ARGC} - 1")
+math(EXPR separatorIndex "${CMAKE_ARGC} - 2")
+if(NOT CMAKE_ARGV${separatorIndex} STREQUAL "--")
+    message(FATAL_ERROR "Expected the mixed EVP loader after --")
+endif()
+set(LOADER "${CMAKE_ARGV${loaderIndex}}")
 
 file(MAKE_DIRECTORY "${WORK_DIR}")
 execute_process(COMMAND "${PATCHER}" --write-export-list "${LIBC}" "${WORK_DIR}/libc.exports"
