@@ -1,0 +1,156 @@
+name: Pinned current library Windows QA
+
+on:
+  push:
+    branches: [ci/current-library-runtime-qa-20261027-e0cd1259]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: current-library-windows-qa-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  BASELINE_COMMIT: b4506efc625689282c290ac3dc53c8805d52edce
+  BASELINE_TREE: 0918f50d1ad96beda6aee6be3c1925a2d58f0bc7
+  UNION_COMMIT: c13e5db7a961eb29d313ff88591cecd09101bbde
+  UNION_TREE: ba8a840364010d2277eb7b58f2c3d6f425ff3b06
+  WINLIBS_RELEASE: 15.2.0posix-14.0.0-ucrt-r7
+  WINLIBS_ZIP: winlibs-x86_64-posix-seh-gcc-15.2.0-mingw-w64ucrt-14.0.0-r7.zip
+  PYTHONDONTWRITEBYTECODE: '1'
+  CMAKE_BUILD_PARALLEL_LEVEL: '2'
+  CCACHE_COMPILERCHECK: content
+  QA: harness/.github/scripts/current_library_windows_qa.py
+  CONFIGURE: >-
+    -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
+    -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++
+    -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+    -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+
+jobs:
+  windows:
+    if: github.repository == 'AZLisme/AnyPS5' && github.repository_id == '1430544501' && github.event_name == 'push' && github.ref == 'refs/heads/ci/current-library-runtime-qa-20261027-e0cd1259'
+    runs-on: windows-latest
+    timeout-minutes: 150
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        include:
+          - case: baseline
+            commit: b4506efc625689282c290ac3dc53c8805d52edce
+            tree: 0918f50d1ad96beda6aee6be3c1925a2d58f0bc7
+          - case: union
+            commit: c13e5db7a961eb29d313ff88591cecd09101bbde
+            tree: ba8a840364010d2277eb7b58f2c3d6f425ff3b06
+    env:
+      SOURCE_CASE: ${{ matrix.case }}
+      PRODUCT_COMMIT: ${{ matrix.commit }}
+      PRODUCT_TREE: ${{ matrix.tree }}
+      EVIDENCE: evidence/${{ matrix.case }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Keep both checkouts deterministic before any source bytes arrive
+        working-directory: ${{ github.workspace }}
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          path: harness
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Reject missing pins and enforce the isolated QA commit
+        id: guard
+        run: python "$QA" guard --out "$EVIDENCE" --harness harness
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: AZLisme/AnyPS5
+          ref: ${{ matrix.commit }}
+          path: product
+          fetch-depth: 0
+          persist-credentials: false
+          submodules: recursive
+      - name: Verify complete product and recursive dependency source bytes
+        id: source_before
+        run: python "$QA" source --out "$EVIDENCE" --source product --harness harness --name source-before
+      - name: Use the upstream Git for Windows CA bundle selection
+        run: |
+          set -euo pipefail
+          for prefix in ucrt64 mingw64; do
+            bundle="C:/Program Files/Git/$prefix/etc/ssl/certs/ca-bundle.crt"
+            if [ -f "$bundle" ]; then echo "SSL_CERT_FILE=$bundle" >> "$GITHUB_ENV"; exit 0; fi
+          done
+          echo 'No CA bundle found in Git for Windows'
+          exit 1
+      - name: Acquire the official versioned WinLibs package
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/$WINLIBS_ZIP"
+          curl -sSfL --retry 3 -o "$archive" "https://github.com/brechtsanders/winlibs_mingw/releases/download/$WINLIBS_RELEASE/$WINLIBS_ZIP"
+          7z x "$archive" -oC:/winlibs > /dev/null
+          echo "WINLIBS_ARCHIVE=$archive" >> "$GITHUB_ENV"
+          echo 'C:\winlibs\mingw64\bin' >> "$GITHUB_PATH"
+      - uses: hendrikmuhs/ccache-action@f09c25b45002a07be2955cbe52e8cee55643f89d
+        with:
+          key: current-library-windows-qa-${{ matrix.case }}
+          save: false
+          evict-old-files: job
+      - name: Capture the actual compiler package, tool versions and runner
+        id: toolchain
+        run: python "$QA" toolchain --out "$EVIDENCE" --archive "$WINLIBS_ARCHIVE"
+      - name: Configure the normal root project without a configure seed
+        id: configure
+        shell: cmd
+        run: python %QA% run --out %EVIDENCE% --name configure -- cmake -S product -B build %CONFIGURE% "-DANYPS5_AGC_EXECUTION_TESTS=F16ToF32Unpack;F64FmaSubnormals;RegistrationPrepareShutdown"
+      - name: Run the unchanged normal registration audit
+        id: registration
+        run: python "$QA" run --out "$EVIDENCE" --name registration -- python product/tools/check_test_registration.py build
+      - name: Retain all registered tests and reject missing union fixtures
+        id: test_list
+        run: python "$QA" test-list --out "$EVIDENCE" --build build
+      - name: Build all normal root targets
+        id: build
+        run: python "$QA" run --out "$EVIDENCE" --name build -- cmake --build build --parallel 2
+      - name: Build the normal patched library target
+        id: libs
+        run: python "$QA" run --out "$EVIDENCE" --name libs -- cmake --build build --target libs --parallel 2
+      - name: Run the unchanged full CTest suite exactly once
+        id: ctest
+        shell: cmd
+        run: python %QA% run --out %EVIDENCE% --name ctest -- python product/tools/select_tests.py ctest build --output-on-failure --timeout 120 --parallel 4 --output-log "%GITHUB_WORKSPACE%\build\ctest.log" --output-junit "%GITHUB_WORKSPACE%\build\ctest.xml"
+      - name: Validate actual skips even after a failing full CTest run
+        id: skip_validator
+        if: ${{ !cancelled() && steps.ctest.outcome != 'skipped' }}
+        run: python "$QA" run --out "$EVIDENCE" --name skip-validator -- python product/tools/check_skips.py build/ctest.xml --job windows
+      - name: Recheck exact source after build and tests
+        id: source_after
+        if: ${{ always() && steps.source_before.outcome == 'success' }}
+        run: python "$QA" source --out "$EVIDENCE" --source product --harness harness --name source-after
+      - name: Preserve raw test, provider, binary and build evidence
+        id: collect
+        if: always()
+        run: python "$QA" collect --out "$EVIDENCE" --build build
+      - name: Require all real stage outcomes and seal evidence
+        if: always()
+        env:
+          QA_OUTCOMES: >-
+            {"guard":"${{ steps.guard.outcome }}","source-before":"${{ steps.source_before.outcome }}",
+            "toolchain":"${{ steps.toolchain.outcome }}","configure":"${{ steps.configure.outcome }}",
+            "registration":"${{ steps.registration.outcome }}","test-list":"${{ steps.test_list.outcome }}",
+            "build":"${{ steps.build.outcome }}","libs":"${{ steps.libs.outcome }}","ctest":"${{ steps.ctest.outcome }}",
+            "skip-validator":"${{ steps.skip_validator.outcome }}","source-after":"${{ steps.source_after.outcome }}",
+            "collect":"${{ steps.collect.outcome }}"}
+        run: python "$QA" finalize --out "$EVIDENCE"
+      - name: Upload immutable run-attempt evidence for both outcomes
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: current-library-windows-${{ matrix.case }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: evidence/${{ matrix.case }}
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 6

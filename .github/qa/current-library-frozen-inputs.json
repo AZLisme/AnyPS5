@@ -1,0 +1,77 @@
+{
+  "main": "e0cd1259a95e6dfaf97f8f73e74410bbc5d8d199",
+  "workflow_blob": "547ca02381128e00f62901a4192364ebb124dcf6",
+  "workflow_same_as_f2f": true,
+  "inputs": [
+    {
+      "pr": 9448,
+      "head": "42d887da88eb1123b82e006371b276ec08bbb0eb"
+    },
+    {
+      "pr": 10953,
+      "head": "581d45c282371af828efec2a8cec6f43beacc68a"
+    },
+    {
+      "pr": 10957,
+      "head": "b27b2a83311db49b72e9ffaa9d1b0360c5f16711"
+    },
+    {
+      "pr": 10960,
+      "head": "92361b19a5c5f6c6e8d92000314ed345ae462d64"
+    },
+    {
+      "pr": 10962,
+      "head": "2865a9504772f3f9b9cb684ebfbabfaa402bf105"
+    },
+    {
+      "pr": 10963,
+      "head": "75897473f4fcd8197f9e88325f6bcc9f61366139"
+    },
+    {
+      "pr": 10964,
+      "head": "216b1118cd1ddffa68dc67948a856ef286e4d142"
+    },
+    {
+      "pr": 10965,
+      "head": "b0a817eaa977c38ca24c0253a290bc0f383ebe7e"
+    },
+    {
+      "pr": 10966,
+      "head": "ee4219de0df53ea2470cd7296955c365c62b4ff6"
+    },
+    {
+      "pr": 10967,
+      "head": "7e26b7683b10d4641f9b0be6adf3e299048f6a74"
+    }
+  ],
+  "main_ref": "refs/review/qa-main-20261027",
+  "main_tree": "41d6e32a5a74db9f851e5d1329f88314ac270cdb",
+  "baseline_control": {
+    "commit": "b4506efc625689282c290ac3dc53c8805d52edce",
+    "tree": "0918f50d1ad96beda6aee6be3c1925a2d58f0bc7",
+    "kind": "frozen-main-plus-test-only-fixture-projection"
+  },
+  "union_product": {
+    "commit": "c13e5db7a961eb29d313ff88591cecd09101bbde",
+    "tree": "ba8a840364010d2277eb7b58f2c3d6f425ff3b06"
+  },
+  "fixture_projection": {
+    "commit": "b4506efc625689282c290ac3dc53c8805d52edce",
+    "source_pr": 11985,
+    "source_head": "cee4a89e3478c5ca8360cc49779af098b4da8f87",
+    "scope": "Exact test-only proposed source projection; source PR head is not an ancestor and is not credited as merged.",
+    "files": [
+      {
+        "path": "tools/tests/test_check_conventions_debt_length.py",
+        "blob": "aeac67b8c7c94ca2636f157e8d7c932a9ba19ecd"
+      }
+    ]
+  },
+  "private_candidates": [
+    {
+      "pr": 10957,
+      "head": "dbdc41e773010bc23ad743e793731149d3c71a50",
+      "published_lease": "b27b2a83311db49b72e9ffaa9d1b0360c5f16711"
+    }
+  ]
+}
