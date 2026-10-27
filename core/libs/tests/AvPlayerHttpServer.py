@@ -9,6 +9,15 @@ import urllib.parse
 
 
 requests = []
+targets = []
+failures = []
+stalled = {"read": threading.Event(), "open": threading.Event()}
+
+
+class Server(http.server.ThreadingHTTPServer):
+    def handle_error(self, request, client_address):
+        failures.append(repr(sys.exc_info()[1]))
+        super().handle_error(request, client_address)
 
 
 class Handler(http.server.BaseHTTPRequestHandler):
@@ -18,11 +27,27 @@ class Handler(http.server.BaseHTTPRequestHandler):
         pass
 
     def do_GET(self):
+        try:
+            self.respond()
+        except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
+            pass
+
+    def respond(self):
         path = urllib.parse.urlsplit(self.path).path
         requests.append((path, self.headers.get("Range")))
-        if path.startswith("/redirect/"):
+        targets.append(self.path)
+        if path.startswith("/sync/"):
+            ready = stalled[path.removeprefix("/sync/")].wait(2)
+            self.send_response(200 if ready else 500)
+            self.send_header("Content-Length", "5")
+            self.send_header("Connection", "close")
+            self.end_headers()
+            self.wfile.write(b"ready" if ready else b"error")
+            return
+        if path.startswith("/redirect/") or path.startswith("/client-redirect/"):
             self.send_response(307)
-            self.send_header("Location", "../range/avplayer.mp4?redirected=1")
+            name = "payload.bin" if path.startswith("/client-redirect/") else "avplayer.mp4"
+            self.send_header("Location", f"../range/{name}?redirected=1")
             self.send_header("Content-Length", "0")
             self.end_headers()
             return
@@ -31,8 +56,13 @@ class Handler(http.server.BaseHTTPRequestHandler):
         assert match is not None
         start, end = map(int, match.groups())
         if path.startswith("/stall/") and start:
+            stalled["read"].set()
             time.sleep(2)
-        if path.startswith("/ignore/"):
+        if path.startswith("/stall-open/"):
+            stalled["open"].set()
+            time.sleep(2)
+        full = path.startswith(("/ignore/", "/full/", "/full-chunk/", "/full-close/"))
+        if full:
             start, end = 0, len(content) - 1
             self.send_response(200)
         else:
@@ -48,13 +78,16 @@ class Handler(http.server.BaseHTTPRequestHandler):
         else:
             self.send_header("ETag", '"fixture-v2"' if path.startswith("/changed/") and start else '"fixture-v1"')
         body = content[start:end + 1]
-        if path.startswith("/chunk/"):
+        chunked = path.startswith(("/chunk/", "/full-chunk/", "/chunk-bad/"))
+        if chunked:
             self.send_header("Transfer-Encoding", "chunked")
-        else:
-            self.send_header("Content-Length", str(len(body)))
+        elif not path.startswith("/full-close/"):
+            self.send_header("Content-Length", str(len(body) + int(path.startswith("/short/"))))
         self.send_header("Connection", "close")
         self.end_headers()
-        if path.startswith("/chunk/"):
+        if path.startswith("/chunk-bad/"):
+            self.wfile.write(b"ZZ\r\n")
+        elif chunked:
             for at in range(0, len(body), 19):
                 chunk = body[at:at + 19]
                 self.wfile.write(f"{len(chunk):X} ;test=1\r\n".encode() + chunk + b"\r\n")
@@ -63,15 +96,24 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self.wfile.write(body)
 
 
-with http.server.ThreadingHTTPServer(("127.0.0.1", 0), Handler) as server:
+with Server(("127.0.0.1", 0), Handler) as server:
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
-    arguments = [sys.argv[1], f"http://127.0.0.1:{server.server_port}"] if len(sys.argv) > 2 else [sys.argv[1], "--http", f"http://127.0.0.1:{server.server_port}"]
+    mode = sys.argv[2] if len(sys.argv) > 2 else "avplayer"
+    arguments = [sys.argv[1], f"http://127.0.0.1:{server.server_port}", *sys.argv[3:]] if mode != "avplayer" else [sys.argv[1], "--http", f"http://127.0.0.1:{server.server_port}"]
     result = subprocess.run(arguments)
     server.shutdown()
     thread.join()
     if result.returncode:
         sys.exit(result.returncode)
+    assert not failures, failures
     assert any(header is not None and not header.startswith("bytes=0-") for _, header in requests)
-    if len(sys.argv) == 2:
+    if mode == "avplayer":
         assert {"/range/avplayer.mp4", "/chunk/avplayer.webm", "/ignore/avplayer.mp4", "/redirect/avplayer.mp4"}.issubset({path for path, _ in requests})
+    if mode == "client":
+        expected = {"/range/payload.bin", "/range/alternate.bin", "/full/payload.bin", "/full-chunk/payload.bin", "/full-close/payload.bin", "/client-redirect/payload.bin", "/changed/payload.bin", "/modified/payload.bin", "/bad/payload.bin", "/short/payload.bin", "/chunk-bad/payload.bin", "/stall/payload.bin", "/stall-open/payload.bin", "/sync/read", "/sync/open"}
+        assert expected.issubset({path for path, _ in requests})
+        assert sum(path == "/cache/payload.bin" for path, _ in requests) == 1
+        assert any(target == "/range/payload.bin?redirected=1" for target in targets)
+        assert any(target == "/range/payload.bin?token=direct" for target in targets)
+        assert all("#" not in target for target in targets)
