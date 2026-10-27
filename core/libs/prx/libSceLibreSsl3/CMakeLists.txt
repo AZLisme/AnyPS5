@@ -50,7 +50,6 @@ if(BUILD_TESTING AND CMAKE_SYSTEM_NAME STREQUAL "Linux" AND EXISTS "${LIBS_INCLU
     target_link_libraries(guest_libressl3_mixed_evp_loader PRIVATE ${CMAKE_DL_LIBS})
     add_dependencies(guest_libressl3_mixed_evp_loader guest_libressl3_mixed_evp_consumer libc libkernel libSceLibcInternal nid_patcher)
     add_test(NAME guest_libressl3_mixed_evp COMMAND ${CMAKE_COMMAND}
-        -DLOADER=$<TARGET_FILE:guest_libressl3_mixed_evp_loader>
         -DCONSUMER=$<TARGET_FILE:guest_libressl3_mixed_evp_consumer>
         -DPATCHER=$<TARGET_FILE:nid_patcher>
         -DLIBC=$<TARGET_FILE:libc>
@@ -59,6 +58,7 @@ if(BUILD_TESTING AND CMAKE_SYSTEM_NAME STREQUAL "Linux" AND EXISTS "${LIBS_INCLU
         -DLEGACY=$<TARGET_FILE:libSceLibreSsl>
         -DSSL3=$<TARGET_FILE:libSceLibreSsl3>
         -DWORK_DIR=${CMAKE_CURRENT_BINARY_DIR}/mixed-evp
-        -P ${LIBS_INCLUDE_DIR}/tests/LibreSsl3MixedEvp.cmake)
+        -P ${LIBS_INCLUDE_DIR}/tests/LibreSsl3MixedEvp.cmake
+        -- $<TARGET_FILE:guest_libressl3_mixed_evp_loader>)
     set_tests_properties(guest_libressl3_mixed_evp PROPERTIES TIMEOUT 20)
 endif()
