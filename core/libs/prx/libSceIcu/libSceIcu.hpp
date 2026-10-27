@@ -4,3 +4,4 @@
 #include "Unescape.hpp"
 
 #include "prx/libSceIcu/include/Api.hpp"
+#include "Api.hpp"
