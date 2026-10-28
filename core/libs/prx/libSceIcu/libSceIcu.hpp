@@ -3,5 +3,3 @@
 #include "Version.hpp"
 #include "CString.hpp"
 #include "Unescape.hpp"
-
-#include "prx/libSceIcu/include/Api.hpp"

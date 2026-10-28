@@ -1,0 +1,185 @@
+name: Pinned ICU main2227 integration Windows QA
+
+on:
+  push:
+    branches: [ci/icu-main2227-windows-20261028]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: icu-standalone-windows-qa-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  BASELINE_COMMIT: 2227f1366188cda5699dd20e2e756a18006a5d4b
+  BASELINE_TREE: 06aca92f6a6ca3c0b64ce97330984cd9f74426d6
+  WINLIBS_RELEASE: 15.2.0posix-14.0.0-ucrt-r7
+  WINLIBS_ZIP: winlibs-x86_64-posix-seh-gcc-15.2.0-mingw-w64ucrt-14.0.0-r7.zip
+  WINLIBS_SHA256: cb2fbad6162540cdf5e1facdce08d4dac359e8cf64f7f696a99274291763b815
+  PYTHONDONTWRITEBYTECODE: '1'
+  CMAKE_BUILD_PARALLEL_LEVEL: '2'
+  QA: harness/.github/scripts/icu_standalone_windows_qa.py
+  CAPABILITY: harness/.github/scripts/icu_windows_capability_gate.py
+  CONFIGURE: >-
+    -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
+    -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++
+    -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+
+jobs:
+  windows:
+    if: github.repository == 'AZLisme/AnyPS5' && github.repository_id == '1430544501' && github.event_name == 'push' && github.ref == 'refs/heads/ci/icu-main2227-windows-20261028'
+    runs-on: windows-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      max-parallel: 7
+      matrix:
+        include:
+          - case: 'baseline'
+            commit: 2227f1366188cda5699dd20e2e756a18006a5d4b
+            tree: 06aca92f6a6ca3c0b64ce97330984cd9f74426d6
+            functional_count: 3
+            total_count: 68
+          - case: '10962'
+            commit: c73801e502d8579eee5c8ab222789ab50f9cd688
+            tree: ff96268af74956747448b48096b9b4dd979a79f2
+            functional_count: 4
+            total_count: 69
+          - case: '10963'
+            commit: c9e12016aad72e44c0541445d6fac4011eaede64
+            tree: f341e988978c48bb81402a0afc5627baca4ec11d
+            functional_count: 4
+            total_count: 69
+          - case: '10964'
+            commit: c954d2aa97b6cb3dddc67bfb3d8d349a4320174a
+            tree: f9252812b4555ed7fabdbb88b1791cc95503dd17
+            functional_count: 5
+            total_count: 70
+          - case: '10965'
+            commit: 4afda81d1fafb5bb48c2f92035adedb495e13f3a
+            tree: f827f64cdda7ea97973c27b6fa76142f30e0b738
+            functional_count: 5
+            total_count: 70
+          - case: '10966'
+            commit: dbe1df86a05ee7e1332c8b961244b593bf39746a
+            tree: a46890feb3f98485211600ecdc13608d35f6056b
+            functional_count: 4
+            total_count: 69
+          - case: '10967'
+            commit: 82a7bc7af3b18b696f35a2e4840e82ed897d3f57
+            tree: b52cb7fe6621ef6ec3f4bedc67c1fc439f1f5a8e
+            functional_count: 4
+            total_count: 69
+    env:
+      SOURCE_CASE: ${{ matrix.case }}
+      PRODUCT_COMMIT: ${{ matrix.commit }}
+      PRODUCT_TREE: ${{ matrix.tree }}
+      EXPECTED_FUNCTIONAL_COUNT: ${{ matrix.functional_count }}
+      EXPECTED_TOTAL_COUNT: ${{ matrix.total_count }}
+      EVIDENCE: evidence/${{ matrix.case }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Keep source checkouts deterministic
+        working-directory: ${{ github.workspace }}
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          path: harness
+          fetch-depth: 3
+          persist-credentials: false
+      - name: Enforce the isolated four-file harness and exact matrix pins
+        id: guard
+        run: python "$QA" guard --out "$EVIDENCE" --harness harness
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: AZLisme/AnyPS5
+          ref: ${{ matrix.commit }}
+          path: product
+          fetch-depth: 0
+          persist-credentials: false
+          submodules: recursive
+      - name: Verify complete product and recursive dependency bytes
+        id: source_before
+        run: python "$QA" source --out "$EVIDENCE" --source product --harness harness --name source-before
+      - name: Use the Git for Windows CA bundle
+        run: |
+          set -euo pipefail
+          for prefix in ucrt64 mingw64; do
+            bundle="C:/Program Files/Git/$prefix/etc/ssl/certs/ca-bundle.crt"
+            if [ -f "$bundle" ]; then echo "SSL_CERT_FILE=$bundle" >> "$GITHUB_ENV"; exit 0; fi
+          done
+          echo 'No CA bundle found in Git for Windows'
+          exit 1
+      - name: Acquire and verify the exact official WinLibs archive
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/$WINLIBS_ZIP"
+          curl -sSfL --retry 3 -o "$archive" "https://github.com/brechtsanders/winlibs_mingw/releases/download/$WINLIBS_RELEASE/$WINLIBS_ZIP"
+          python -c 'import hashlib,os,pathlib; p=pathlib.Path(os.environ["RUNNER_TEMP"])/os.environ["WINLIBS_ZIP"]; actual=hashlib.sha256(p.read_bytes()).hexdigest(); expected=os.environ["WINLIBS_SHA256"]; print("WinLibs SHA256",actual); assert actual==expected,"WinLibs archive digest mismatch"'
+          7z x "$archive" -oC:/winlibs > /dev/null
+          echo "WINLIBS_ARCHIVE=$archive" >> "$GITHUB_ENV"
+          echo 'C:\winlibs\mingw64\bin' >> "$GITHUB_PATH"
+      - name: Capture the actual native compiler, runtimes and runner
+        id: toolchain
+        run: python "$QA" toolchain --out "$EVIDENCE" --archive "$WINLIBS_ARCHIVE"
+      - name: Configure a fresh normal root build without caches or seeds
+        id: configure
+        shell: cmd
+        run: python %QA% run --out %EVIDENCE% --name configure -- cmake -S product -B build %CONFIGURE%
+      - name: Audit unchanged normal CTest registration
+        id: registration
+        run: python "$QA" run --out "$EVIDENCE" --name registration -- python product/tools/check_test_registration.py build
+      - name: Require exact functional fixtures and all 65 headers
+        id: test_list
+        run: python "$QA" test-list --out "$EVIDENCE" --build build
+      - name: Build exact fixture targets with normal product providers
+        id: build_targets
+        run: python "$QA" build-targets --out "$EVIDENCE" --build build
+      - name: Capture native macros with each exact fixture compile command
+        id: macros
+        run: python "$QA" macros --out "$EVIDENCE" --source product --build build --capability "$CAPABILITY"
+      - name: Run the exact functional fixtures once and preserve raw evidence
+        id: ctest_functional
+        run: python "$QA" ctest-functional --out "$EVIDENCE" --build build
+      - name: Run all 65 public header checks once and preserve separate evidence
+        id: ctest_headers
+        if: ${{ !cancelled() && steps.build_targets.outcome == 'success' && steps.macros.outcome == 'success' }}
+        run: python "$QA" ctest-headers --out "$EVIDENCE" --build build
+      - name: Recheck exact source after compilation and execution
+        id: source_after
+        if: ${{ always() && steps.source_before.outcome == 'success' }}
+        run: python "$QA" source --out "$EVIDENCE" --source product --harness harness --name source-after
+      - name: Capture logs, compile commands and actual fixture/provider payloads
+        id: collect
+        if: always()
+        run: python "$QA" collect --out "$EVIDENCE" --build build
+      - name: Require native Windows memory capability and provider evidence
+        id: capability
+        if: ${{ !cancelled() && steps.ctest_functional.outcome == 'success' && steps.ctest_headers.outcome == 'success' && steps.source_after.outcome == 'success' && steps.collect.outcome == 'success' }}
+        run: python "$QA" capability --out "$EVIDENCE" --source product --build build --capability "$CAPABILITY"
+      - name: Require every stage and seal focused evidence
+        if: always()
+        env:
+          QA_OUTCOMES: >-
+            {"guard":"${{ steps.guard.outcome }}","source-before":"${{ steps.source_before.outcome }}",
+            "toolchain":"${{ steps.toolchain.outcome }}","configure":"${{ steps.configure.outcome }}",
+            "registration":"${{ steps.registration.outcome }}","test-list":"${{ steps.test_list.outcome }}",
+            "build-targets":"${{ steps.build_targets.outcome }}","macros":"${{ steps.macros.outcome }}",
+            "ctest-functional":"${{ steps.ctest_functional.outcome }}","ctest-headers":"${{ steps.ctest_headers.outcome }}",
+            "capability":"${{ steps.capability.outcome }}","source-after":"${{ steps.source_after.outcome }}",
+            "collect":"${{ steps.collect.outcome }}"}
+        run: python "$QA" finalize --out "$EVIDENCE"
+      - name: Preserve immutable run-attempt artifacts on success and failure
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: icu-main2227-windows-${{ matrix.case }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: evidence/${{ matrix.case }}
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 6
