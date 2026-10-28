@@ -1,0 +1,3287 @@
+{
+  "schema": 1,
+  "branch": "refs/heads/ci/icu-utf16-search-windows-20261028",
+  "baseline": "6e9b9134f6ed14e659d870a33118d164096551df",
+  "baseline_tree": "8e9e4b8943411265388b4d109411e3b6f63eab34",
+  "scope": "Exact frozen main and exact standalone own10967 packaging-fix candidate separately; no union, foreign imports, source projection or old runtime credit. Normal root Release focused native Windows fixtures and all65 public-header cases.",
+  "cases": {
+    "baseline": {
+      "pr": "main",
+      "commit": "6e9b9134f6ed14e659d870a33118d164096551df",
+      "tree": "8e9e4b8943411265388b4d109411e3b6f63eab34",
+      "tests": [
+        "guest_icu_version",
+        "guest_icu_unescape"
+      ],
+      "targets": [
+        "guest_icu_version_tests",
+        "guest_icu_unescape_tests"
+      ],
+      "expected_total": 67,
+      "critical_blobs": [
+        {
+          "path": ".gitmodules",
+          "mode": "100644",
+          "git_blob": "219621ad1add4e45a5afc1c48028a8d0afa77d8d",
+          "sha256": "81c34d5c31473c633d04b754174c021df52f0f211bbf0ba4d566f5671e857cce",
+          "size_bytes": 2497
+        },
+        {
+          "path": "CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "34a92b8586733ab26f94c0a8e0f1a4269ec899b3",
+          "sha256": "132eb9d229c602b05eecf47019e7393bb6b37067703cbe999e3d3932f13963bb",
+          "size_bytes": 27239
+        },
+        {
+          "path": "cmake/Jxr.cmake",
+          "mode": "100644",
+          "git_blob": "9e20294e31d2be85442f6ca34e387b62f6b8b498",
+          "sha256": "aa23dd7b148030f32be2e7d979af4171f5e77d4c382ffec69b667ca637f0acf9",
+          "size_bytes": 1968
+        },
+        {
+          "path": "cmake/Opus.cmake",
+          "mode": "100644",
+          "git_blob": "d6bc3e3f7862ff09fa64d27f0ec48bde8302f174",
+          "sha256": "bc89a57596d2acd090b30b079101fd5cdc16c02ab08a4ccdb6dc17c42e5040c9",
+          "size_bytes": 730
+        },
+        {
+          "path": "cmake/SystemDeps.cmake",
+          "mode": "100644",
+          "git_blob": "c679aaab3c067551a3520b84d98571d37ea53805",
+          "sha256": "9dca427fda186eb1e17756a67f2dda1848f4baea04a93d62f01444e7ffd35c44",
+          "size_bytes": 6372
+        },
+        {
+          "path": "cmake/Tracy.cmake",
+          "mode": "100644",
+          "git_blob": "d108607a060a857acfc40d037622f66af0e525dc",
+          "sha256": "1006e892f051f5e5e60e5666c988818dfd5c09524b05e6d85a70d1c699d97ed8",
+          "size_bytes": 1135
+        },
+        {
+          "path": "cmake/ZArchive.cmake",
+          "mode": "100644",
+          "git_blob": "c4c7eb2024ca3fc034041ec9460d2bc539e1b678",
+          "sha256": "7cc6446f8c030a20c2f189740fa6afa0abf3664f0e261fee51dea54596ee8bf2",
+          "size_bytes": 1202
+        },
+        {
+          "path": "core/Decoder/Jpeg/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "f16c5df8a6dee18cf13b91c22ea0f6bc50144df5",
+          "sha256": "1108099690f4c16538009278e6e157340457438a7c09439d3f747acfb13344e7",
+          "size_bytes": 3621
+        },
+        {
+          "path": "core/Decoder/Png/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "6a86166c2708730aa5c10e97f525e9e351b69a0f",
+          "sha256": "c0f0e1869be4549b34a7ec9709a6c7fda4963a595be80445d1de0dcc45a71f45",
+          "size_bytes": 1321
+        },
+        {
+          "path": "core/libs/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "b1de7b4e4a7b79c2d60bac559375344d352d91e0",
+          "sha256": "07d782f66675eadf8ab510c3b51de63f918e191b023aa556eb8c59ecacee6b43",
+          "size_bytes": 65698
+        },
+        {
+          "path": "core/libs/prx/libSceAgc/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "0d617a6e0ca7693f9625c67a1b1a733e7c2b8941",
+          "sha256": "92307af58a76f81aa15841fe07b645e85b9dbcf9022750ef27399c5e74026466",
+          "size_bytes": 24706
+        },
+        {
+          "path": "core/libs/prx/libSceAgcDriver/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "38e8ab6d62cf928710295ec857b6905d94116470",
+          "sha256": "7f73c39e3f389de3268a23c56dc6ac5dd8341d6a0d34be2e89f2e0bff28c4377",
+          "size_bytes": 284032
+        },
+        {
+          "path": "core/libs/prx/libSceAgcDriver/PostCompile.cmake",
+          "mode": "100644",
+          "git_blob": "736f3207fd0667339940f3fe51872508a377d1d2",
+          "sha256": "c889dc2a2cd23df497f7eda107a668fc4e2dbb95af4a2b36afff11c000c79b7f",
+          "size_bytes": 2069
+        },
+        {
+          "path": "core/libs/prx/libSceAgcDriver/embed_spirv.cmake",
+          "mode": "100644",
+          "git_blob": "eb0c9b94ca0b485bb7a73efd924fa07cefd9af14",
+          "sha256": "5ac5b2dd10b84986547a91543a8063ca005f39added6507254e9e302e3e6fa0b",
+          "size_bytes": 1003
+        },
+        {
+          "path": "core/libs/prx/libSceAgcDriver/tests/ComputePipelineCaptureRun.cmake",
+          "mode": "100644",
+          "git_blob": "fb150075734bf2aa56ab90610efca1d6f5bf8c9a",
+          "sha256": "411fcfb78860e2c3d4d7fd392321e81b8a3299be0a220ca42bec01d1db4ef6c6",
+          "size_bytes": 4018
+        },
+        {
+          "path": "core/libs/prx/libSceAgcDriver/tests/Pm4ReplayTool.cmake",
+          "mode": "100644",
+          "git_blob": "d578167acf7cebc7db995b99246c9d66bac14de0",
+          "sha256": "db077c1678a9e01fca71d1a6d30daea89112024174ce65de65427eb1c9839f67",
+          "size_bytes": 2300
+        },
+        {
+          "path": "core/libs/prx/libSceAgcDriver/tests/ShaderReplayTool.cmake",
+          "mode": "100644",
+          "git_blob": "9b58c1d485b95d1436d57d1b98bc2b4302ab6898",
+          "sha256": "a53eaac2b18f38ad8c68ee8b4c84ca47672632ffdb89470b9e7fbab1e0196087",
+          "size_bytes": 1929
+        },
+        {
+          "path": "core/libs/prx/libSceAgcDriver/trace_revision.cmake",
+          "mode": "100644",
+          "git_blob": "a63974e68e13fa1b9e3bfd8bac815f0d60c6eb8c",
+          "sha256": "d2a1b2366ed05162c319022fc4bdabb4574e2b71f807b6361493afb214f9b893",
+          "size_bytes": 879
+        },
+        {
+          "path": "core/libs/prx/libSceAjm.native/AjmLibrary.cmake",
+          "mode": "100644",
+          "git_blob": "ec9f5b9a81bf6a40621ab2b9eab9cd1f07a98bf0",
+          "sha256": "4790603dccae154584eefd70b147a95fbfb4922a909048125629496e3b1156a6",
+          "size_bytes": 587
+        },
+        {
+          "path": "core/libs/prx/libSceAjm.native/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "8734851197e6cb64b81550de3af27593d4b23134",
+          "sha256": "b22d764a4abdb6bb02e2a84bbe6cba8ca97ebcf1e8ecd97dd6c480903df0b08d",
+          "size_bytes": 4876
+        },
+        {
+          "path": "core/libs/prx/libSceAjm.native/PatchLibAtrac9.cmake",
+          "mode": "100644",
+          "git_blob": "ed0a64c6e9e2a553e6252e554ca33dee46f683fc",
+          "sha256": "4fa2bdc4175357034c4d54890b03db89310dd2639bc25e59d6b5b9fcd59b40bb",
+          "size_bytes": 3650
+        },
+        {
+          "path": "core/libs/prx/libSceAjm/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "7a9c708eaef7d2529105872d68ded2a505ef1310",
+          "sha256": "250f5387946078af1560552e5a53e1da463460caee610e7317364985bddf17e1",
+          "size_bytes": 144
+        },
+        {
+          "path": "core/libs/prx/libSceAmpr/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "f9898075a10e4b9706d1cb13444ad84b6ec3c89e",
+          "sha256": "c414b9314a06cffd6d10a3e120a0efdd2e0f7ecb3bf0cc0e12fd778d12ddd24b",
+          "size_bytes": 2786
+        },
+        {
+          "path": "core/libs/prx/libSceAppContent/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "b1deabb076d462d5933af114a57f97fe6a546e5c",
+          "sha256": "98c3cfc4f7b10b4e53082ee66e024143550c3a965b7295cf736c7e06a15e20e5",
+          "size_bytes": 767
+        },
+        {
+          "path": "core/libs/prx/libSceAt9Enc/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "89880a7b92deb3bac28a616a82b93edc0efd6ac7",
+          "sha256": "abed1a57a7874723f5a5361952377df1173b8818f363ff83b297a2cf76206483",
+          "size_bytes": 722
+        },
+        {
+          "path": "core/libs/prx/libSceAudio3d/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "2d4e0247349c2c10a3652fed54030564249c7a91",
+          "sha256": "da0fcc21223c47ed4a47abcc647a2f055e0d95b7f98d7d5291d8b82ac95e0c13",
+          "size_bytes": 2686
+        },
+        {
+          "path": "core/libs/prx/libSceAudioIn/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "f25187b9c88026e0cd5e1aec84082987721cf69e",
+          "sha256": "930cf90f35234532e561f4d7ae1ab2297e16571d9543a00939987828272876e5",
+          "size_bytes": 1015
+        },
+        {
+          "path": "core/libs/prx/libSceAudioOut/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "d352122663d00479505907c8d91eec0e69600d4b",
+          "sha256": "33d8a0592cbf6c656ca75500667498194ddf3a62ceac3651a251284b615b358c",
+          "size_bytes": 17000
+        },
+        {
+          "path": "core/libs/prx/libSceAudioPropagation/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "0575687fe342831366a386e96ac5dd05c463e481",
+          "sha256": "3fade86e1a76d891e1aa31f08ae2a99070f7fa70dbfd6c8748b8f65a4d47e99a",
+          "size_bytes": 869
+        },
+        {
+          "path": "core/libs/prx/libSceAudiodec.native/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "9820917503724ea091eb6b66eec361769782c3c2",
+          "sha256": "14248fbd21bf00dd75454b027e6e25fec12ca8b240ac167f51fca597f73fa181",
+          "size_bytes": 210
+        },
+        {
+          "path": "core/libs/prx/libSceAudiodec/AudiodecLibrary.cmake",
+          "mode": "100644",
+          "git_blob": "b806bb8c0c73f04828fcff2d75d7b10c78124720",
+          "sha256": "906be12c79ad0dd21a8a02bf594610ac623002ec0bf5d92dbb496d3205a810ed",
+          "size_bytes": 573
+        },
+        {
+          "path": "core/libs/prx/libSceAudiodec/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "2e7fa84a5ecee43b222d2783a1f2cf5770855fb2",
+          "sha256": "9c0d8c072cc4b2d335e43392acbf60bca509d43107fe3715da5229610ff7f4aa",
+          "size_bytes": 666
+        },
+        {
+          "path": "core/libs/prx/libSceAvPlayer.native/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "b9a16defb77eaad9b2e8a2ded6248e4a5dc08304",
+          "sha256": "97280932b9d5f985a32947509fdbaf40a60e0af0481ecc0eb6608b794fe34f50",
+          "size_bytes": 326
+        },
+        {
+          "path": "core/libs/prx/libSceAvPlayer/AvPlayerLibrary.cmake",
+          "mode": "100644",
+          "git_blob": "32fc8bb786fc2d916a1fd1c55b845c2124cf4382",
+          "sha256": "91b1cb535dd3e05ec773125f77f263dd9d1c9e4bdbc4ba4b8a17454515bfa649",
+          "size_bytes": 651
+        },
+        {
+          "path": "core/libs/prx/libSceAvPlayer/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "d8a652d7ffc61b7e4aaa05665faa7af9af445e3a",
+          "sha256": "2fa50c97be6146e950341fcda1a49c42bf849868cf3f058cfe37682ed20baaf2",
+          "size_bytes": 2041
+        },
+        {
+          "path": "core/libs/prx/libSceBluetoothHid/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "1f7328c361ab7c586bda342262b61904d125f766",
+          "sha256": "4f94997de7bf37b4e7a73a561f01a69047034ce1543168600e8fe783faa458f9",
+          "size_bytes": 800
+        },
+        {
+          "path": "core/libs/prx/libSceCamera/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "8591dce44fee86a8a9025b201db80626cbff05e9",
+          "sha256": "1c9cb9ab2c6ae9c8e3f6b6c4133490e85024a4fa4824b97735f3ba60b8b6a71a",
+          "size_bytes": 1746
+        },
+        {
+          "path": "core/libs/prx/libSceCdlgG2P/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "f15414c7335d4d018baef76a4da09ebf53b6e42d",
+          "sha256": "df75cf2058250388e6d801374be24a3cc16393c36f0cf7fc8cb825919de0a5b6",
+          "size_bytes": 774
+        },
+        {
+          "path": "core/libs/prx/libSceCdlgPlayerReview/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "f3aa2fabdc6c8d031c06685a80710283c0c6a459",
+          "sha256": "99cc1a6bcfc5aebcc99f6e1bc378635f7874378db90d12986c3d7d4511c16527",
+          "size_bytes": 1111
+        },
+        {
+          "path": "core/libs/prx/libSceCesCs-module/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "64ae3a7a2eb0f99005c400681b1dc42b0b971e2f",
+          "sha256": "8e3b778177d3a5131c9d0fee67f7bf9181a245ffb26898a705e4899f7f551aa4",
+          "size_bytes": 109
+        },
+        {
+          "path": "core/libs/prx/libSceCesCs/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "b87f620d0893faf9316a112ff7ae9c54a91e0cc6",
+          "sha256": "52aa21edd818e20578452ca869c36aedb0f1c9a9114ae398a908e2ae488a5a48",
+          "size_bytes": 3512
+        },
+        {
+          "path": "core/libs/prx/libSceCesCs/CesLibrary.cmake",
+          "mode": "100644",
+          "git_blob": "d18971f49b2c824bb2dcd26023e6a44e62e6d0fe",
+          "sha256": "5b3367f1e4e71cb0fd5dabccc586c8ce5cf424aaf28b097fff78428ea0d9e732",
+          "size_bytes": 383
+        },
+        {
+          "path": "core/libs/prx/libSceCommonDialog/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "d3e8c4b64e748ad4d32b574503852bb0193d127d",
+          "sha256": "441c3c09409cf59af1353e908c6f84acf3a9f60fc45f192f893789e707813e07",
+          "size_bytes": 807
+        },
+        {
+          "path": "core/libs/prx/libSceCompanionHttpd/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "cdc8922b8a1cc5c17e1f7fdb5ced9390c6aed277",
+          "sha256": "cbdb413ef35b797afcfeef427e72d6e5843be1bbbfc5906c315f30a611a9d1d6",
+          "size_bytes": 1040
+        },
+        {
+          "path": "core/libs/prx/libSceContentExport/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "4dd9a470cb39d3fe93bd0337322596c356673a7a",
+          "sha256": "022b82090a0d096e08ac80f1eadcc1937a5b6f55287c25945b603130cd221d0f",
+          "size_bytes": 1380
+        },
+        {
+          "path": "core/libs/prx/libSceContentSearch/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "0c46ea1108fab2a6ff1e6cef3566b0c4125136b7",
+          "sha256": "65288438fb5261347d6f717565a16770f3a9fb4e9d83d299d0aec21cf4857fdf",
+          "size_bytes": 798
+        },
+        {
+          "path": "core/libs/prx/libSceConvertKeycode/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "341ff705b0a94022bdcd9c4c6ccf091fecd71654",
+          "sha256": "2ccf03631f3c79c59a94751e89ff45bb4bd360aab4c6a0fc838a3be7497f7662",
+          "size_bytes": 2902
+        },
+        {
+          "path": "core/libs/prx/libSceDiscId/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "a1a24f3c3062a35801d956f659a10cce93c65ef2",
+          "sha256": "3d748e4a7f9a3e656f5f45763278e9fa95951b78dac6812aa32e670c3aacad88",
+          "size_bytes": 722
+        },
+        {
+          "path": "core/libs/prx/libSceDiscMap/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "fa84f65ac28422873c353c4d864b660bd371b381",
+          "sha256": "c2eb889ef5cbf062cb9af12d14795d3ac15d50f62f170e223178505cc23d7ad1",
+          "size_bytes": 735
+        },
+        {
+          "path": "core/libs/prx/libSceErrorDialog/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "8473f24eac9f52d94812d849b06b4baaaefa8bf8",
+          "sha256": "6ed88b5015d7ac981602b112b4130e2a08f0dff7c774e04d7a7f5914d9ffbe4f",
+          "size_bytes": 727
+        },
+        {
+          "path": "core/libs/prx/libSceFiber/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "ef08d950c589d85d65e332dadc3c117fdf277b26",
+          "sha256": "6b9a05fa12d33d4e5b3ded5517b34eb3004f565dd89c0d1276e5a942371d3c00",
+          "size_bytes": 912
+        },
+        {
+          "path": "core/libs/prx/libSceFont-module/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "d0f8129c01c4c0d0de48c81bb05a91fc80291c5f",
+          "sha256": "6cd619fba046ec33374f12d4f4350dbbd0baa185ca774562a82ad4eb581fc127",
+          "size_bytes": 109
+        },
+        {
+          "path": "core/libs/prx/libSceFont.native/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "af4d2df01d8e3611009bc9365eacc1e6ec43f284",
+          "sha256": "cce2a5be1da279f61457107e8197b7ce245c71c9978cd24514f0db007f2cf310",
+          "size_bytes": 109
+        },
+        {
+          "path": "core/libs/prx/libSceFont/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "dfa37bf1215a0745606fde10cb283aacf891998f",
+          "sha256": "2c3e9579024fb8c12c32890730a642a9cc4a36ffd40b3c2c79e20555f61d04a5",
+          "size_bytes": 5572
+        },
+        {
+          "path": "core/libs/prx/libSceFont/FontLibrary.cmake",
+          "mode": "100644",
+          "git_blob": "0ae75346fec3af244a977244f1f3439fd1144946",
+          "sha256": "529147b1d2b4e91f7ebe64b44bc97e90339ab6a2243597ab9327b1e24a79e8c8",
+          "size_bytes": 963
+        },
+        {
+          "path": "core/libs/prx/libSceFontFt-module/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "07b9d9571c2c4038b2e541a42e620163b71d0d59",
+          "sha256": "26ea36be777a0c7867b9fea242c613a9a51bc46a72603170a374d1484148319b",
+          "size_bytes": 118
+        },
+        {
+          "path": "core/libs/prx/libSceFontFt/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "8bf7308eb33cfb70723ea92fa3a87945937eccdb",
+          "sha256": "4d1ac9c07fc10ff083eb7c7f264cfdf8ad849478d5b3c891a2362d6f4f57dab9",
+          "size_bytes": 95
+        },
+        {
+          "path": "core/libs/prx/libSceFontFt/FontFtLibrary.cmake",
+          "mode": "100644",
+          "git_blob": "c45bd07ab6bea3463f53402877ed1f82c9e944ba",
+          "sha256": "88d803b60b4144de0ab3fc94f132c2fe82fe5a4bc856d050b0c55d750f2d02e4",
+          "size_bytes": 570
+        },
+        {
+          "path": "core/libs/prx/libSceFreeType/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "9682b1e0b3ea08dba48a5a28bc68f1d342c51e75",
+          "sha256": "9173ff362d3cdefcd0e03634a0f08fa871493418869871efb7c801e3a57f0b0b",
+          "size_bytes": 8831
+        },
+        {
+          "path": "core/libs/prx/libSceFreeType/CurveBounds.cmake",
+          "mode": "100644",
+          "git_blob": "462dec722394c85c9b8d3a94506058c15350c313",
+          "sha256": "16ca3d7937141c479e2b71c3967545414436533940d65f2e7e62b6022d8c30ee",
+          "size_bytes": 762
+        },
+        {
+          "path": "core/libs/prx/libSceFreeType/ModuleProperties.cmake",
+          "mode": "100644",
+          "git_blob": "b4ff4952dac1b22b469d5357f1551f4d25b9d66c",
+          "sha256": "3a16f0dab89263ac72ea7ad7c7de12e3a4550ecca0e5757b8784b405bf307c91",
+          "size_bytes": 1450
+        },
+        {
+          "path": "core/libs/prx/libSceFreeTypeOl/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "e8f18eac9706315168acd3e08a1ae98088f25cdc",
+          "sha256": "5e205884b7bcb046847d53f6627cf1f06e4050611a80577fa18359ee9d6d4bdf",
+          "size_bytes": 2552
+        },
+        {
+          "path": "core/libs/prx/libSceFreeTypeOptOl/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "ed6ccae2b64cb4c969a904c5203ae5d7c8ccb32c",
+          "sha256": "bb37a6c44328e04c633b99393686b6520c5768445f348b1e4088cba045d93722",
+          "size_bytes": 2882
+        },
+        {
+          "path": "core/libs/prx/libSceFreeTypeOt/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "aca3d5c0dfcea770bc3d45f929f324249b734350",
+          "sha256": "84fa6c676b0cca7ec17843fa91056246107649117cd9c6f9144722ac97227444",
+          "size_bytes": 222
+        },
+        {
+          "path": "core/libs/prx/libSceGameCustomDataDialog/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "6f19d7891ea459927209c2dc5dbe00648b49e45f",
+          "sha256": "b7e51ba4f6df659d081d2b80e733c90fdce3129324e3fa749b56048316a10a5d",
+          "size_bytes": 847
+        },
+        {
+          "path": "core/libs/prx/libSceGameUpdate/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "a224c6ab3da2c47bf16a607839ee723931deb4a8",
+          "sha256": "7b1560a974eec60b855fb7800d24f68e251808368d430bc1cd2fc794d5cebcf7",
+          "size_bytes": 767
+        },
+        {
+          "path": "core/libs/prx/libSceHmd/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "5bf180e47841a31f5160288923ca76f904b0e16e",
+          "sha256": "6a0675a28d011782e9b0cf92a07d1161d4dbe41b6fadaad2776f3da7e2a85f48",
+          "size_bytes": 717
+        },
+        {
+          "path": "core/libs/prx/libSceHmd2/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "6d7565ac4acbdc2dff2478d01446422df3de3cc5",
+          "sha256": "f8fd86e80d2afa6b9cf40ee4abf10b8b7573fcc8ced4b5e1c3b1581fbe137a4c",
+          "size_bytes": 1301
+        },
+        {
+          "path": "core/libs/prx/libSceHmdSetupDialog/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "a294abe2b0aa17172541b2e1ddfc1384037f336a",
+          "sha256": "a690fad8e571f44ba9749f7a69248c110f61e149ebb76a938338ab0aabd1ac3f",
+          "size_bytes": 769
+        },
+        {
+          "path": "core/libs/prx/libSceHttp/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "701f264762d969ebad9ce5ba19ea5bb0ae35f1b4",
+          "sha256": "4e698ce8362d6294aada231d4c0bf612f40256bf059f9daee93c590da6bbbf02",
+          "size_bytes": 1600
+        },
+        {
+          "path": "core/libs/prx/libSceHttp2/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "de8b70d50ce9ce7b23c22f99f005960957d04d8e",
+          "sha256": "c6692920198fdbcb1a61c083f66820d5cc282243c8a9537c1f2c89d4ab543d6a",
+          "size_bytes": 4826
+        },
+        {
+          "path": "core/libs/prx/libSceHttpCache/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "da7dc5c18244f1392cf0f2b5f190e5a81e9d6be5",
+          "sha256": "4d7ad063b33efb136156abfdfa655b811ba09c1582e1cf69444e05c0080d05bd",
+          "size_bytes": 916
+        },
+        {
+          "path": "core/libs/prx/libSceIcu/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "14fb9a076194d71c203d38640d2bb3923cb8b56d",
+          "sha256": "a7c51358535f10abeb8a0270652753bd3d9338608d80d6b7928ff0bf0905f4b5",
+          "size_bytes": 1493
+        },
+        {
+          "path": "core/libs/prx/libSceIcu/Export.cpp",
+          "mode": "100644",
+          "git_blob": "cef6411bce125b8ed913d932034744b79aa475cd",
+          "sha256": "3598eed7117ab29ca05270e690152575b888eb18ec579be2d25fc5d3d3942f4e",
+          "size_bytes": 19272
+        },
+        {
+          "path": "core/libs/prx/libSceIcu/Invariant.cpp",
+          "mode": "100644",
+          "git_blob": "53501ba1d6dcff5ec4834bc39abe82026f7f771b",
+          "sha256": "e925bb2a904ff4423774d77d65fac3a09b2b395c691936b2eaf7092582ffbb6e",
+          "size_bytes": 1002
+        },
+        {
+          "path": "core/libs/prx/libSceIcu/Invariant.hpp",
+          "mode": "100644",
+          "git_blob": "77e2421ef24ba16b7e0e5b16b4184f927b8e0ad9",
+          "sha256": "fadb764990cfeb04d84a7f09ea2c12eb73e52d5064fd997a8c3ae3d12f34b3bb",
+          "size_bytes": 263
+        },
+        {
+          "path": "core/libs/prx/libSceIcu/Unescape.cpp",
+          "mode": "100644",
+          "git_blob": "acf0b2abaf33377e149af6535b76a7402499149e",
+          "sha256": "fa860c03ff856de45b6b4f62df4b3b4301006691e5f21aa315519acb18d355a8",
+          "size_bytes": 5494
+        },
+        {
+          "path": "core/libs/prx/libSceIcu/Unescape.hpp",
+          "mode": "100644",
+          "git_blob": "a91eb17ed69c6be5196b2dc29e365eed739780b9",
+          "sha256": "84a896ff62c6246d9c2c4a7da3d330fdc42f3fa10aee68b41c54d2fdb31eba4a",
+          "size_bytes": 403
+        },
+        {
+          "path": "core/libs/prx/libSceIcu/Version.cpp",
+          "mode": "100644",
+          "git_blob": "5916903a8245d6adf5a3b8e9245e6aee750a6c77",
+          "sha256": "67d250acedfec0f8b29b8c0b97088554376f45b3128aa6ad118aec8ccdfb8fc0",
+          "size_bytes": 1995
+        },
+        {
+          "path": "core/libs/prx/libSceIcu/Version.hpp",
+          "mode": "100644",
+          "git_blob": "4963a77ed25f79623bb3a7205f394f30dd4939cd",
+          "sha256": "8e0ea4a20a08f4ea443eb064fe6b320232d007bf4bac0a8a6aafda942d4a687e",
+          "size_bytes": 330
+        },
+        {
+          "path": "core/libs/prx/libSceIcu/libSceIcu.hpp",
+          "mode": "100644",
+          "git_blob": "d8c66857efb2bc24733c6fbc13a6a8a4f690f957",
+          "sha256": "7211f1303901c534eac681530b7090f809c02c43847af59e5eda41b4fa46e7b2",
+          "size_bytes": 85
+        },
+        {
+          "path": "core/libs/prx/libSceIcu/tests/Unescape.cpp",
+          "mode": "100644",
+          "git_blob": "1dc71529407172d6fa73033c7cc4e8697a59f602",
+          "sha256": "e679f1505e59c6937b28f870b32d258e5a1bea8b871944d80f869470584402ff",
+          "size_bytes": 8669
+        },
+        {
+          "path": "core/libs/prx/libSceIme/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "2e471a09d6fd3d855f53938fecec696973f28256",
+          "sha256": "a43ef18200badbcee4ca7e97cf42d7b672a2b3df72fb8004a0e443688278a06e",
+          "size_bytes": 3135
+        },
+        {
+          "path": "core/libs/prx/libSceImeDialog/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "e3b25d8fa2e0ddef6c0d1672c97114cbde43ab61",
+          "sha256": "583883cf0a8948675a10a2f02dc514de5e67c5120c7c3a3fad0eea6e5dbc1cf4",
+          "size_bytes": 1508
+        },
+        {
+          "path": "core/libs/prx/libSceInvitationDialog/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "56b44db4a682cf2e20d29c57f109d85a7a11de5c",
+          "sha256": "405a509ce1bb14682708f954140f793bdb541fda0ca7a59dbaccbbaa6d8fb039",
+          "size_bytes": 949
+        },
+        {
+          "path": "core/libs/prx/libSceIpmi/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "f549ae49f19b0e860f67e30cbcf49a179fa74749",
+          "sha256": "cfcca931fe53373090b5f63e19995353f44934dd47612cf2590f74dd6426ad5d",
+          "size_bytes": 182
+        },
+        {
+          "path": "core/libs/prx/libSceJobManager/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "1364b0e64d76fac0d488dd9f7b7ef913ace8a1a9",
+          "sha256": "46adb8c87ea1396e6ccaf8b15d7cd696c2eafcfffbdbc4d16be685f6818aa5b8",
+          "size_bytes": 6301
+        },
+        {
+          "path": "core/libs/prx/libSceJpegDec/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "141c7e25d0a44efc95462582c6c85e72c1f30337",
+          "sha256": "c7ab3fb0ed55b190b444de34992d25ea9523a4b976dd3b5e5bdddbd9445ea280",
+          "size_bytes": 978
+        },
+        {
+          "path": "core/libs/prx/libSceJpegEnc/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "d92ace87088693e79afddcb810985106df8d231f",
+          "sha256": "a3cf10fd4ff8e2a770ee551779db359bc6a599836f5f314da871d701c452a4d0",
+          "size_bytes": 978
+        },
+        {
+          "path": "core/libs/prx/libSceJsc/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "73915bc4fff0cd342ecd17c79095e44611acab18",
+          "sha256": "70fbdb6a148b3e521479030f2832fc879f081fe787d8ca3c0eb49374fd6f8915",
+          "size_bytes": 731
+        },
+        {
+          "path": "core/libs/prx/libSceJson2/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "cf4780cf800f13b0ea289f9d20e875a1fd21a6de",
+          "sha256": "83f9c200b1513ea0a06822821a8dc2d13570373c9ee246b54b2170f458a4209b",
+          "size_bytes": 2475
+        },
+        {
+          "path": "core/libs/prx/libSceJxr/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "c94b793736323590bbc52217198f221f0e9776b6",
+          "sha256": "4c432279d539e1348d51a0c04c0aab28b11809e4f1eb859cea35a0ffbee7c14e",
+          "size_bytes": 4177
+        },
+        {
+          "path": "core/libs/prx/libSceKeyboard/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "6f23ed265fed99c78fc427f8bdd528874af716ad",
+          "sha256": "f7018ce4f45a98dd10c204305b97dd8a0ee17723f6ac897c3c28b811ca50af07",
+          "size_bytes": 995
+        },
+        {
+          "path": "core/libs/prx/libSceLibcInternal/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "f17760d17910449be1be2b0526c00df124742f25",
+          "sha256": "74dda2ee29aa86d7545235460e0e093b5c5c2e42c50599c4fa4295091c5a3603",
+          "size_bytes": 11145
+        },
+        {
+          "path": "core/libs/prx/libSceLibreSsl/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "0033e0157c81854603a174193d3e67fef2ef4775",
+          "sha256": "f4371b899f69ff435d3c0043a44ba0f826d71965c3bbe68f6b9dacd62936afc6",
+          "size_bytes": 14608
+        },
+        {
+          "path": "core/libs/prx/libSceLibreSsl/ProtocolSelection.cmake",
+          "mode": "100644",
+          "git_blob": "111f818aecc7918d9328ef0425aa6dd4970840ba",
+          "sha256": "875bdb968f3d4fae937c71a6fd1924fcd6496194cd81f011a11e39d96307ed40",
+          "size_bytes": 1247
+        },
+        {
+          "path": "core/libs/prx/libSceLibreSsl3/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "c787bccfeaa1c3aa97e8ea6bc74da61d67083755",
+          "sha256": "317ef097395a33b80b99511cf85cec59374cec44cabed7c5eeb83285c979da82",
+          "size_bytes": 2587
+        },
+        {
+          "path": "core/libs/prx/libSceLoginDialog/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "f02e58a6b4992885334cb0bab613db6a6d49c3dc",
+          "sha256": "6d4fbc443e5122c130c9468ae77163f0d82dc6765168fbe29e91a7bdc19c8d7f",
+          "size_bytes": 727
+        },
+        {
+          "path": "core/libs/prx/libSceLoginService/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "5993f09b494d15a1925e646b160bd0c9ac60307f",
+          "sha256": "db08d0b8baa688d4d65b91b6909287e0d983546cd270524a43af7c36d2535549",
+          "size_bytes": 800
+        },
+        {
+          "path": "core/libs/prx/libSceM4aacEnc/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "85a6f282a7f8efec0c5dffc477bba437e2bac375",
+          "sha256": "934d5c7ceb52b746289e75135bafd71b0c616d54d38584a87bbb9ed59e9df18b",
+          "size_bytes": 748
+        },
+        {
+          "path": "core/libs/prx/libSceMbus/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "9de325ed3fcd647a597a47f476fb50adb886a0fe",
+          "sha256": "e7e0b34942a224fc421f57e16fac13856978f905172a87a057bc8c9115a24357",
+          "size_bytes": 708
+        },
+        {
+          "path": "core/libs/prx/libSceMouse/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "b7f58761da875ab984caeb53567c0c752292d78f",
+          "sha256": "b0b369ec67e2fcd42d6207a157e2142a3667932a9580f01c097a0de4c3e82db1",
+          "size_bytes": 959
+        },
+        {
+          "path": "core/libs/prx/libSceMsgDialog.native/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "deefade5ae00a2f2d6964d21564d712cbec01d56",
+          "sha256": "1b5ecc0ac8b77d118c28700b68c0fd525fa347a5ec1926a7cfbb827cf099ad78",
+          "size_bytes": 786
+        },
+        {
+          "path": "core/libs/prx/libSceNet/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "acc487792edc19be5ac251322e52de03914a2817",
+          "sha256": "23fae02b7dc59d20918337a55b70893200aec7918bd04737745c087e4650b3a6",
+          "size_bytes": 14418
+        },
+        {
+          "path": "core/libs/prx/libSceNetCtl/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "6907cd9fb7a1db6e0dd35f56b07fb01b6e776b68",
+          "sha256": "ee51c941352c072dade0928294f1ef29ef084e9b82bc659188939f078e284db8",
+          "size_bytes": 1542
+        },
+        {
+          "path": "core/libs/prx/libSceNgs2.native/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "525fc51f022a2793dad5ab9b7727e36d3296062d",
+          "sha256": "4a3f1b1a9246ff16c9c91104ff4e21338900bccebb3e919e4dbda3f93691d186",
+          "size_bytes": 2143
+        },
+        {
+          "path": "core/libs/prx/libSceNgs2.native/Ngs2Library.cmake",
+          "mode": "100644",
+          "git_blob": "27dde605fe946a70f077f171f655f1caf5392b48",
+          "sha256": "259b5cdb024dc6d2d82dd99db76e770aa9a66cda03d40f4e6313c0c0e5fee689",
+          "size_bytes": 1659
+        },
+        {
+          "path": "core/libs/prx/libSceNgs2/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "d64e678c3ef2556f0027ad33e2753ffa9e5728eb",
+          "sha256": "118b60a49a75f7bf1e79ef996becfe0829e6b84d7db7f0dfc67e7f012eed7f27",
+          "size_bytes": 2777
+        },
+        {
+          "path": "core/libs/prx/libSceNpAuth/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "67acfa7500f27d380ddb58c8d428f1656a3ca64c",
+          "sha256": "aeae0a538df956a812dc7970256ca8cd1e5fe4aa6f7ed3ef066fb6d1a021a2d7",
+          "size_bytes": 879
+        },
+        {
+          "path": "core/libs/prx/libSceNpAuthAuthorizedAppDialog/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "15dcbb4f2e6e6fd937dd7160465610a1811b332a",
+          "sha256": "44a67badbd9cbd5e7908721991e063402a86eb2fa5307cdad1499c0bd12e7e44",
+          "size_bytes": 1013
+        },
+        {
+          "path": "core/libs/prx/libSceNpCommerce/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "1c59d83752808c4f9a3cfb4016a438139f0cd6c3",
+          "sha256": "ae019cb1af929ec677f9a6780077bf32ebb96155a13ba44e857dad4b32bc1102",
+          "size_bytes": 918
+        },
+        {
+          "path": "core/libs/prx/libSceNpCommon/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "d4cc13ef6505b6d537888e13ab61e2c6d90d98a3",
+          "sha256": "89b09be3f6711bfaecd8ae6f4ed781d036250056ffe27c18e581e563a1d23d56",
+          "size_bytes": 1078
+        },
+        {
+          "path": "core/libs/prx/libSceNpCppWebApi/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "2519e8cc810122e7b621e9bc94428af900d6722c",
+          "sha256": "a5451704776dab8b64afabe44c0cb6fc08eb2b142392d279a0b916732589ff02",
+          "size_bytes": 1057
+        },
+        {
+          "path": "core/libs/prx/libSceNpFriendListDialog/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "219499b30b2535dae656c909ae68274c2f5e89e3",
+          "sha256": "8ebbe7a413088feec0271b4a734d1d72bfb95e47f9d9452dcecf51582c42212a",
+          "size_bytes": 823
+        },
+        {
+          "path": "core/libs/prx/libSceNpManager/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "cd99c36b34d6f55c05eb1450c1923c3e0481ba5f",
+          "sha256": "713eef0330da534d6db4a5ecee798d98c4cf5497d3123d0782b3af5a051ecf76",
+          "size_bytes": 1566
+        },
+        {
+          "path": "core/libs/prx/libSceNpMatching2/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "06978af7adf356d0af00d36dcf8a7abe9df19088",
+          "sha256": "41d0e23ea18aadf94e97d8d230b003dabfb074322b0d6ef0990cb50bce6e8ecd",
+          "size_bytes": 920
+        },
+        {
+          "path": "core/libs/prx/libSceNpPartner001/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "c339e97d94da90deef648cf9ecbf063652099fbf",
+          "sha256": "0355d25511b463e0f69e752f6c00792fc1e0b0789f36661ca8c1450d915bf3aa",
+          "size_bytes": 776
+        },
+        {
+          "path": "core/libs/prx/libSceNpProfileDialog/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "64065918085b46af909c901b217ce4babae222df",
+          "sha256": "dfacf0a5607b75feda56f19553930d7f1af9adda004cde4715a356ce8f732900",
+          "size_bytes": 904
+        },
+        {
+          "path": "core/libs/prx/libSceNpScoreRanking/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "d73264a441d154a216612b70b4997d2d154f52a9",
+          "sha256": "a9679eeca9b198edada99221f47508c61633afe53cadaf33ee000db9c9192108",
+          "size_bytes": 899
+        },
+        {
+          "path": "core/libs/prx/libSceNpSessionSignaling/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "51dd193aa8e58e65d78813a8694fb3a8d5ff6e7b",
+          "sha256": "345651170d28472cbe78a62803d8129a3abed92ee7fb15e35b4e91c0ca6d9896",
+          "size_bytes": 817
+        },
+        {
+          "path": "core/libs/prx/libSceNpSignaling/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "a5ecdbd9440f1b16894877ba5a5de458957ddd6a",
+          "sha256": "4892a56e65b37256516df52ff351fa7bd360287ebf437dde0c18ef438ad76be1",
+          "size_bytes": 920
+        },
+        {
+          "path": "core/libs/prx/libSceNpSnsFacebookDialog/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "5445d0ddddc0efcbe55cc4e6cbafede315e3121b",
+          "sha256": "e9ff7ae67b58e11188a0812b5b648576d31337db399072fa403aa8492384112c",
+          "size_bytes": 835
+        },
+        {
+          "path": "core/libs/prx/libSceNpTrophy/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "7301fa20ab41570d230724b9714613624cd52c18",
+          "sha256": "c45c9f91ca17f05d5907db817912ef6b9b8897fbaad39ca86c01d322666e5d82",
+          "size_bytes": 807
+        },
+        {
+          "path": "core/libs/prx/libSceNpTrophy2/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "7f9d3efe3ac873380202f649b7589e1371e9ba91",
+          "sha256": "894e890cc185eed22e915e362473e108590d615423966183237cb1d268a6044c",
+          "size_bytes": 2598
+        },
+        {
+          "path": "core/libs/prx/libSceNpTus/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "6046093997bf612f7d74d2a3414bcb61fc297e9e",
+          "sha256": "f62f654d73ea4d0ee4089b0aa0c5af554a5fc411cbf2202de562c071a2ee1baa",
+          "size_bytes": 1248
+        },
+        {
+          "path": "core/libs/prx/libSceNpUniversalDataSystem/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "b74a51652bc0a5b70b31e4160bd13967efb2f0d1",
+          "sha256": "e01f4ab036d0f387881dded7215618d728cce4bc3118bf1c32d30db0ea5cafef",
+          "size_bytes": 4162
+        },
+        {
+          "path": "core/libs/prx/libSceNpUtility/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "982e5ab6208a8589b30f7f8577b546911cba6797",
+          "sha256": "023a25a784ad85a57270c230d061aea66fffd8b83b50739cbd62969fdeae6fad",
+          "size_bytes": 892
+        },
+        {
+          "path": "core/libs/prx/libSceNpWebApi/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "0e3e193000c559ca3f4a5013ff0ec3cd5a5c6b12",
+          "sha256": "152b2bb24bf2842599492cb4496114b99da3e203a7356137d64afafe6d107597",
+          "size_bytes": 815
+        },
+        {
+          "path": "core/libs/prx/libSceNpWebApi2/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "1fbafd28386cde779fe54c07a58936919ea14603",
+          "sha256": "d42b809cb3f1f47c2e00301fd7d87abb6b60903af1f9f4201d9d641f25208fae",
+          "size_bytes": 840
+        },
+        {
+          "path": "core/libs/prx/libSceOpusCeltDec/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "38a71d09b5accc64ca7164983f0f61a0cd4d27b8",
+          "sha256": "2bd6039c40d50224322918fa9d2b1c434d3c213a2a7e32c4cc92780bdff7fb59",
+          "size_bytes": 881
+        },
+        {
+          "path": "core/libs/prx/libSceOpusCeltEnc/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "c988c3c633ed45f5748ee35e58bbfd9488088fb5",
+          "sha256": "256ed6604c92faa30e2ecb4e5b47a72a7b8482981f236b27352976e6739db37a",
+          "size_bytes": 881
+        },
+        {
+          "path": "core/libs/prx/libSceOpusDec/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "4356e19cabfe108b137c77f2a3dd7ed0602b22d9",
+          "sha256": "bc766ee0b71f4d50194f05de1317cfffb27dfcdeea52d3782e74048619b677d2",
+          "size_bytes": 1530
+        },
+        {
+          "path": "core/libs/prx/libSceOpusSilkEnc/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "de311aade8d0a30a98bfbd465718ae5dbbdb53e5",
+          "sha256": "df6881eaf6f369947f9b5960e4576dcdf3e79ec8cebbf85e75c5350a97093606",
+          "size_bytes": 881
+        },
+        {
+          "path": "core/libs/prx/libScePad/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "b979e5344cf2cc33677e29f856418e0e05eb63bd",
+          "sha256": "35819cfd1e494f40afd698ca1be0255d054fb19de61f6d027bc64a5a75861542",
+          "size_bytes": 1482
+        },
+        {
+          "path": "core/libs/prx/libScePlayGo/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "a96d8f5a368f42f8769d178b661b71964a9a46d9",
+          "sha256": "05f1049435d8f8752cf5d6b6aee7807c1b03abc92a79e36b7f607f757763bf63",
+          "size_bytes": 715
+        },
+        {
+          "path": "core/libs/prx/libScePlayGoDialog/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "207b14523e906b116875c1a9c1f8caf94011eafa",
+          "sha256": "adadc6ed2193163e573326c8509c63db6640a798a71e3e4b0edb9311d6a98185",
+          "size_bytes": 900
+        },
+        {
+          "path": "core/libs/prx/libScePlayerInvitationDialog/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "bf346c10396c8883c05ead44aa08fa9c5eb8d809",
+          "sha256": "8beac30b88bb11425a775c074c4a51e1d4026f261c26ab328aacebddcff64af7",
+          "size_bytes": 888
+        },
+        {
+          "path": "core/libs/prx/libScePlayerSelectionDialog/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "0d85abead0d9947e6c286bca0afe00a6e5304a49",
+          "sha256": "67ab1f6c409798437c68907bebd5f024785d6c2f2a14f1a2928d9fbb3712bae0",
+          "size_bytes": 1019
+        },
+        {
+          "path": "core/libs/prx/libScePngDec/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "74413ac2d3120422e9f0f34747818acbe149b969",
+          "sha256": "b0ff9840d77597d882f87be107d0f5735d8a7a3b76e4dd53081a940a4b204e99",
+          "size_bytes": 919
+        },
+        {
+          "path": "core/libs/prx/libScePngEnc/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "9999a3f5201421abbbf389ae07f3d09ca2abf6c4",
+          "sha256": "88f53cf263db19cb41fb7d4d2475b63a186c0bff0f68099fe92bca0a494a1434",
+          "size_bytes": 884
+        },
+        {
+          "path": "core/libs/prx/libScePosixForWebKit/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "9f28aee996578d46ee975e98dcca378caaefd9b9",
+          "sha256": "e2fedc127ac3d4a91ff0f1f922a986147915f428f8f4715e4ebf805c3ccce155",
+          "size_bytes": 4961
+        },
+        {
+          "path": "core/libs/prx/libSceProprietaryVoiceChatHelperPrx/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "4feb3ddf253ca063f22f60e9127d78d78fb87d0c",
+          "sha256": "10983b897b1bc72f735dcfe8cfab6e644e8b503a2b986cc5242dc8f1653faa15",
+          "size_bytes": 1011
+        },
+        {
+          "path": "core/libs/prx/libScePsml/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "121b19bff112fcd6cf5cff7ea4fdd8adf649adb6",
+          "sha256": "1515dde0b81c821fb4408c5b9ecc59501f0898ad3a27d006522ac15a123f23e8",
+          "size_bytes": 108
+        },
+        {
+          "path": "core/libs/prx/libScePsml_debug/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "aceb0af75095dab77a057cfc7f241dbb08e012fa",
+          "sha256": "2861109d1ece59bbdde7ff6f1cdd6465344d7d908f25adbcaf788f75bd75b4b0",
+          "size_bytes": 632
+        },
+        {
+          "path": "core/libs/prx/libScePsml_debug/PsmlLibrary.cmake",
+          "mode": "100644",
+          "git_blob": "69fe16dbf32960ac8aea9b3e913b841480a8d8d0",
+          "sha256": "d0c981b76e6d4ee1a7d7af0cc3f37dd152c87ea02eeb2e9b1e50b898d45bc9b0",
+          "size_bytes": 259
+        },
+        {
+          "path": "core/libs/prx/libSceRandom/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "0a15d269d1cc38fa907ab3d8cc015e92550a7139",
+          "sha256": "eaa2089c3e9808f514df2ad82982c65d107a543f645b6acf444217d026849bc5",
+          "size_bytes": 661
+        },
+        {
+          "path": "core/libs/prx/libSceRazorCpu/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "e4d7808ed930ff68c246f8c8419189b780790ef1",
+          "sha256": "5e7f59784972bed88695b5dc014669179654f7bdfb8147228e66d9873ea270f2",
+          "size_bytes": 743
+        },
+        {
+          "path": "core/libs/prx/libSceRegMgr/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "e10c382e33d826273781356b77d987cdd3c53566",
+          "sha256": "d883279cf43d02a575c0e550e83a477395898099a5631569e861a31c46d6dd6a",
+          "size_bytes": 715
+        },
+        {
+          "path": "core/libs/prx/libSceRtc/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "1411d4f9369b127e48ac2dbbdccf67e7a95a061e",
+          "sha256": "17c3418369074a36549649080c87a26431fcc038f8cecfe8ff9b0f66ee9b8e09",
+          "size_bytes": 825
+        },
+        {
+          "path": "core/libs/prx/libSceRudp/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "2f8f0c7420ff13d1451abf2af28118a830c40599",
+          "sha256": "397fafa08238d2c6611f02bfad64e165e4540ae4f762fef59079dfe48da8d1f7",
+          "size_bytes": 960
+        },
+        {
+          "path": "core/libs/prx/libSceSaveData.native/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "5236fba466e70117be322f08e2a68408a8a54ff6",
+          "sha256": "42854cde389147c7e6d29650ac4c2bee42d96a5f329f7a4f4a45d324930abd44",
+          "size_bytes": 3843
+        },
+        {
+          "path": "core/libs/prx/libSceSaveDataDialog.native/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "ddbc456db5cae3c08da84e3eebf908fbc8510df5",
+          "sha256": "602fabdba8ff55dbfb3d054d681a9895fe3b356f5e2d1412d568fd6eca841ad5",
+          "size_bytes": 856
+        },
+        {
+          "path": "core/libs/prx/libSceScreenShot/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "0300d678fa8ae9821689c4e51c41e64c4363a185",
+          "sha256": "9bf01e586bab9d96a0f043a3ecbd55b4d931ccc5032596be1799c6f69eca5611",
+          "size_bytes": 901
+        },
+        {
+          "path": "core/libs/prx/libSceShare/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "f0f7bb67ccc45be0bda3c024747eb4541b797e90",
+          "sha256": "7a50a6a6dab48a6e3c69f0400d2f6a7385a9d6b2a421ff133f8c9e749d6f6ceb",
+          "size_bytes": 649
+        },
+        {
+          "path": "core/libs/prx/libSceSharePlay/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "1560813dab2f8b214d9fb3072d0136e2c6f490d0",
+          "sha256": "feb11631f1e29cc04609abd155f3ceddace0d1f882b55ae148a2e56dc403a2a6",
+          "size_bytes": 761
+        },
+        {
+          "path": "core/libs/prx/libSceSocialScreenDialog/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "83af8dda26f1312b66ed268bb1043ab1b08f7393",
+          "sha256": "b36d1cb3b472c5c148239b9c454caaac9ee6df84c938e566b5e7f3539404c02b",
+          "size_bytes": 817
+        },
+        {
+          "path": "core/libs/prx/libSceSpSysCallWrapper/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "5e407e9a3701e6e938c57e28061eaeb03cde4a14",
+          "sha256": "40b03cb0d718cde493c9cef1aafdfaaccc88a58b3f5bd0a72ed65ea516f4784b",
+          "size_bytes": 943
+        },
+        {
+          "path": "core/libs/prx/libSceSsl/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "cf5b24b0140a3ee834638ed75a8076910d8b339e",
+          "sha256": "d1e53d8ca35bd1a1cea6133c6441d70ad676986e07c630d6f3eccb8e1bbcb540",
+          "size_bytes": 5947
+        },
+        {
+          "path": "core/libs/prx/libSceSulphaDrv/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "649d75c4d0c5ccd7651c56e9a59892d0313787ed",
+          "sha256": "fe214642e2fea53361f27144f66506ec4e9a723a038b1dadcbb4ef5cc8dcd353",
+          "size_bytes": 832
+        },
+        {
+          "path": "core/libs/prx/libSceSysmodule/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "b03a2433c9ce9f83be9e819f911fbd402075265d",
+          "sha256": "16a96b38f4817d2e3cb06a08dcea5e404722b7e7671dea31ef8613adeb944d97",
+          "size_bytes": 1786
+        },
+        {
+          "path": "core/libs/prx/libSceSystemService/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "7d8a4c65d6dc045212e5446892c828d2b13f9190",
+          "sha256": "920fbae8485fb490eda69eb05c005dff01eaa1d0af8cfd6d00e09ef667096e1d",
+          "size_bytes": 10722
+        },
+        {
+          "path": "core/libs/prx/libSceTextToSpeech2/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "cb54c13843b00d99f1c5b251d31a23cb09f32472",
+          "sha256": "48f1e34f80c6172945df2e45fba9d043db1ed1bb7ade287b94521b86bf87ed34",
+          "size_bytes": 820
+        },
+        {
+          "path": "core/libs/prx/libSceUlt/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "57362053844d7204016f1cfaec70d46fc0315c9e",
+          "sha256": "f8e7937f27f8763b8abd51ed0ce9efa50575dadbea2f441855aa5370793a29c6",
+          "size_bytes": 4220
+        },
+        {
+          "path": "core/libs/prx/libSceUsbStorage/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "9be261a1355effbb4dcf817725dfd94dfb9c4e58",
+          "sha256": "8037467e46ebebaeb1b657e1b1cc5d85e5b1e28f7101ca89a5cd264ca62c983e",
+          "size_bytes": 1007
+        },
+        {
+          "path": "core/libs/prx/libSceUsbd/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "0ae07d11b513d95273b7052b8251f23070395459",
+          "sha256": "ba3c1811d07b16aa211b4213a15d66e1758ef908796e1737c066231d0469011f",
+          "size_bytes": 856
+        },
+        {
+          "path": "core/libs/prx/libSceUserService/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "282c8e98a35ee0af2a0e5491ff07c87f7052573d",
+          "sha256": "caa1a7d9ebe6da1100b1f97230f5866228ed4dc94393e6d30ec0e98b608e6242",
+          "size_bytes": 2139
+        },
+        {
+          "path": "core/libs/prx/libSceVdecsw/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "6d41dc24e9e1d14f3dbaa2e597e5b0cd0e90e5a7",
+          "sha256": "3d2d926f63abb6639fcf1aec0d2f08685802021720aac6a96da691b49cba686c",
+          "size_bytes": 830
+        },
+        {
+          "path": "core/libs/prx/libSceVideoOut/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "ae318bdedcf16f6fcb7e660d9a583781ecadef94",
+          "sha256": "e14d756db8f178b0b1563387aadd2101613b75b3a58b2171a4a55a2781fdf0da",
+          "size_bytes": 19350
+        },
+        {
+          "path": "core/libs/prx/libSceVideoRecordingP/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "ba8c08e28a27051b3a7df6007f5503c778772152",
+          "sha256": "7319d22f8a61bb4cc2f8623ecd8442a6da29ff062625fe8d1484601759efa12a",
+          "size_bytes": 831
+        },
+        {
+          "path": "core/libs/prx/libSceVideodec/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "9289cda4e6cd873626847bf1b24da1f8d8eb7c22",
+          "sha256": "69b17b99aa995678c79d719297d751a9b575537d0d83a2fab7c6f0f84d682efe",
+          "size_bytes": 858
+        },
+        {
+          "path": "core/libs/prx/libSceVideodec2/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "244b8050b3c4322d1fc0277e4c5fbd4b4a4bb5be",
+          "sha256": "d67c9c2696d23f67165314a376a4429847e468e30e0463979c6f7e0162832a8b",
+          "size_bytes": 2264
+        },
+        {
+          "path": "core/libs/prx/libSceVoice/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "e2cc5765c8b4575204e6a99f2e60bd0c1a374ba5",
+          "sha256": "48cf8f4154baaa6e8f6da547f3e83b3781a7e98ebcfc2bf61b15e11e8ce47174",
+          "size_bytes": 702
+        },
+        {
+          "path": "core/libs/prx/libSceVoiceQoS/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "40f3e890f72565818612246aa2c2bc8aa28011e5",
+          "sha256": "fad51869496bdce534e32021991192129b7cb0d1d316c8dbe7a1238b1a6268cd",
+          "size_bytes": 891
+        },
+        {
+          "path": "core/libs/prx/libSceVorbisDec/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "0da3f0a43e0605beb1dbae37c90663abb88d8cce",
+          "sha256": "016c08f76557ea28b438ee69025dfb259294234e8f52f2ff0888b86ec8cf8b05",
+          "size_bytes": 2969
+        },
+        {
+          "path": "core/libs/prx/libSceVrServiceDialog/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "56c0611c39158a4ef78044b4147cdac33fefedda",
+          "sha256": "735778b313a91332749d3df8b35acabdf19192020728cfabef0808a74ecebfb8",
+          "size_bytes": 781
+        },
+        {
+          "path": "core/libs/prx/libSceVrSetupDialog/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "1f0ea1700c1511df1247ab6cb3195b5c0520cf8e",
+          "sha256": "07878bcafba4834a5ae916b393d9c263b34ea5ac9502e076d133431e634c1272",
+          "size_bytes": 757
+        },
+        {
+          "path": "core/libs/prx/libSceVrTracker2/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "cccd8e8455ecda92548a0ecb3afb9f58a07fbdf1",
+          "sha256": "82a59ef0397f1f9f6e9c038ecebe4ed0a940c3ff81c275356deee904c4a22b44",
+          "size_bytes": 848
+        },
+        {
+          "path": "core/libs/prx/libSceWebBrowserDialog/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "641f60463e9e09ce78e35d4dd0b4d6d9071ebd3f",
+          "sha256": "b5328d5920a0cde85ff19510fea92e99007a3cd3cb77a09489cf5a4cd3a17c47",
+          "size_bytes": 1442
+        },
+        {
+          "path": "core/libs/prx/libSceZlib/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "4b216a85a410970e6fa0ac113b0dd0c8661c3bad",
+          "sha256": "8d9fc4888bacdb4bf9cdbe8ecc2a302caa8b3427ee7e09a47e6f514d25c175e8",
+          "size_bytes": 1014
+        },
+        {
+          "path": "core/libs/prx/libc/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "9a07b98acbcd1d6760ebc1a0f15f9696d710289b",
+          "sha256": "b3ba69273f1e3c04d8c1a610262e25f0b759e45747081953f205f0058e1180e2",
+          "size_bytes": 82674
+        },
+        {
+          "path": "core/libs/prx/libc/include/GuestArena.hpp",
+          "mode": "100644",
+          "git_blob": "49719e365b5d89a34940466270c45177eafecd17",
+          "sha256": "3ff7e0933d8f935ebf5648c8ac451f39d32a22101bae9558fe8a26c896330edb",
+          "size_bytes": 6386
+        },
+        {
+          "path": "core/libs/prx/libc/include/GuestWriteWatch.hpp",
+          "mode": "100644",
+          "git_blob": "96f09551c65d0bed78537f53ededc08282535509",
+          "sha256": "a85790a678bb197b42fa2581b6e74ae109e4da9209f4601cd84e23b7646a3a8a",
+          "size_bytes": 1599
+        },
+        {
+          "path": "core/libs/prx/libc/src/GuestArena.cpp",
+          "mode": "100644",
+          "git_blob": "65f574aded2c4dadb3676d5da63d21ccb31f147c",
+          "sha256": "4fcde27f16a8082c3318591c48265bdabb74614a3e501a6fa852154a77703f04",
+          "size_bytes": 29226
+        },
+        {
+          "path": "core/libs/prx/libc/src/GuestWriteWatch.cpp",
+          "mode": "100644",
+          "git_blob": "0d83d52ccb7247cb793618aad0beccf8da6868b0",
+          "sha256": "83bd54232072a8cc2d10c438b649e2bd0e100ddc25e140a7d43b6f7f179fb622",
+          "size_bytes": 32718
+        },
+        {
+          "path": "core/libs/prx/libc/src/specifics/windows/SehPersonalities.cpp",
+          "mode": "100644",
+          "git_blob": "cd4c85606315af62b88625c72edf70cd69272d1f",
+          "sha256": "62eea0353a67ac79a878d9b7e746afde8825d8964fd5dd8e537d8319e3a8be6c",
+          "size_bytes": 384
+        },
+        {
+          "path": "core/libs/prx/libkernel/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "27e89bc6414ffc750d11f2362f21d42d8ad307c7",
+          "sha256": "d713fb102d117c2595f9c76f5cc57fda610779f9ba3ca54f61896d18e7ae92ec",
+          "size_bytes": 150716
+        },
+        {
+          "path": "core/libs/prx/libkernel/DirectMemory/DirectMemory.cpp",
+          "mode": "100644",
+          "git_blob": "5c85fec058175a8eb31f5ac16929d34db5a01920",
+          "sha256": "f33f8ba326a3102e2a611eae8cad33cfd85d3e8d30da3e7e0e0ebbd4ccc3bbb4",
+          "size_bytes": 77698
+        },
+        {
+          "path": "core/libs/prx/libkernel/DirectMemory/DirectMemory.hpp",
+          "mode": "100644",
+          "git_blob": "604e85b34c2fbb03735deef7a8c9d60c6433536d",
+          "sha256": "c2dbbde6ac9986cc5aeaa37dc41d5aa5dd761370691bd906b7dbaa648f9ae738",
+          "size_bytes": 2910
+        },
+        {
+          "path": "core/libs/prx/libkernel/DirectMemory/Export.cpp",
+          "mode": "100644",
+          "git_blob": "cffd7e88daaadca70c43a9d3de56571c01c36ad6",
+          "sha256": "d5549a01299f7298e6f5816956a84625905c5c57f63cee8e2e68e349d579df2d",
+          "size_bytes": 37203
+        },
+        {
+          "path": "core/libs/prx/libkernel/DirectMemory/Jit.cpp",
+          "mode": "100644",
+          "git_blob": "60e266a543dd72e9ee402d05a1e47837295578ae",
+          "sha256": "a13a6139848f8216ada48ed58e6b5d45c4b8ba288fe3ac4101b685756de9702b",
+          "size_bytes": 8170
+        },
+        {
+          "path": "core/libs/prx/libkernel/DirectMemory/MemoryPool.cpp",
+          "mode": "100644",
+          "git_blob": "44a02c7f1257b216ab628cfcd46c371d8942ea12",
+          "sha256": "bfeea0a2b6f6d790a5845f58b2d94b24083cd386377eefc3d00664fb2d0b857e",
+          "size_bytes": 13210
+        },
+        {
+          "path": "core/libs/prx/libkernel/DirectMemory/MemoryPool.hpp",
+          "mode": "100644",
+          "git_blob": "5882f0c2e9a23f80704e547f1b1b1cfc5130de13",
+          "sha256": "08ba67a2bf9f2a026afd1fd316f3c700bec3b8ebc46ff72afbd1055222677fd4",
+          "size_bytes": 446
+        },
+        {
+          "path": "core/libs/prx/libkernel/DirectMemory/MemoryPoolExport.cpp",
+          "mode": "100644",
+          "git_blob": "d20fb3c3647c13f377a5683f7121767212c5863c",
+          "sha256": "d6c63cfc92222d0a33a859619b8f197d79e2584695a57006f64c51b0513a8c5e",
+          "size_bytes": 4601
+        },
+        {
+          "path": "core/libs/prx/libkernel/DirectMemory/PosixMemory.cpp",
+          "mode": "100644",
+          "git_blob": "81295e330c38bcf2fd897bb2e45c399948418c04",
+          "sha256": "3857b93821695c25f9516cb8a3d4a9e500803c1ae65f361a1d3af566801b787e",
+          "size_bytes": 17318
+        },
+        {
+          "path": "core/libs/prx/libkernel_sys/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "70a25df4cd5b181d6f9c9c2662939d9b83ffe070",
+          "sha256": "30c8f4a21aa6a7d79b58dda934755d4106f1676e8c4055553e11a7e9ec11749a",
+          "size_bytes": 270
+        },
+        {
+          "path": "core/libs/prx/ulobjmgr/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "47c70a7c5c7fb5dc8398f5d45e0f86c54996d53f",
+          "sha256": "c3aa00a0cd95a022829586ed4344499ad24a6009812f250d0188674db05bcb92",
+          "size_bytes": 655
+        },
+        {
+          "path": "core/libs/tests/GuestIcuVersion.cpp",
+          "mode": "100644",
+          "git_blob": "b464003cac1df81701b9e9191575c2a917bd0a28",
+          "sha256": "1154fd21a020fff5c425991b9800bd6304abf4568aaeca5e4c047551571ce3eb",
+          "size_bytes": 7193
+        },
+        {
+          "path": "core/libs/tests/LibcFloatingPointContraction.cmake",
+          "mode": "100644",
+          "git_blob": "132956d6557da2e716aa2131a09cb9c2b3360fb6",
+          "sha256": "f64b6003fcd82f91cb44aec8ac8e5c3270eb1eef34860f85932b806d1aaa48d0",
+          "size_bytes": 1251
+        },
+        {
+          "path": "core/libs/tests/ThreadLocalDestructors.cmake",
+          "mode": "100644",
+          "git_blob": "d58f04de55be2056479e11eccc233f1cdf78af92",
+          "sha256": "3a266d5c716fa72d8741df4a4d1b64a85d59dfa45f0d18635ebd61ce3df411a7",
+          "size_bytes": 1769
+        },
+        {
+          "path": "core/libs/tests/guest_arena/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "e9a10f6a4c0660f07176381db668cc735071da92",
+          "sha256": "c6095140f002598364f9f2113be4e8bc16a9ea8326415b2ec4ac6dd2b0be01d8",
+          "size_bytes": 929
+        },
+        {
+          "path": "core/libs/tests/register_context/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "eedbc80e3f43366804cf08b0c25165abbf3519e1",
+          "sha256": "57fb4c4c2c2c768219f4ea20fe030837dde01bcb1d2ad8a61236e75871fbf2db",
+          "size_bytes": 889
+        },
+        {
+          "path": "core/libs/tests/shared_memory/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "f9e85f8dec18f4d482c607abac3e5385c223fc58",
+          "sha256": "de7004668deaf2c995d6d20d74dd05cde1b46dadc55690f1dee289dfe519ff34",
+          "size_bytes": 858
+        },
+        {
+          "path": "core/libs/tests/test_public_headers.py",
+          "mode": "100644",
+          "git_blob": "25116597656f4b83bd0fae1afbe65edbb61b3d5f",
+          "sha256": "d1ddda6ec684af25a9656828db63b2fe78eea0ee3bfe2a15d48027369f6c6242",
+          "size_bytes": 10702
+        },
+        {
+          "path": "core/libs/tests/write_watch/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "ba692f336cfca8d6e73dcb5e0a2693fda70aec42",
+          "sha256": "c7eda995a15b6a3ab48a5c2f867b667be5d2471a379d03c9fd910b0356f71a57",
+          "size_bytes": 929
+        },
+        {
+          "path": "core/relinker/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "0ef721495001ae13f68db10797d0f65770dd9118",
+          "sha256": "d52de420e29ff2e0aff2b52b5b7b0c7a0280898c3e0b7b5bb1a2b4b257636d9e",
+          "size_bytes": 69114
+        },
+        {
+          "path": "core/relinker/revision.cmake",
+          "mode": "100644",
+          "git_blob": "0abbecf6130779754c09984e68db7fcc98534922",
+          "sha256": "3520f8b052fc1939750e0611975fa4a33adfaf08a58bdef439dc1b96b42cdb0d",
+          "size_bytes": 545
+        },
+        {
+          "path": "core/relinker/wasm/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "b92335d011e5e3b6801f77a3e313686dfe83b1c4",
+          "sha256": "7516d88b72759820646e933314105bd4669504d897c2c56f09579f65a47f2213",
+          "size_bytes": 845
+        },
+        {
+          "path": "core/shader/recompiler/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "4b3bf1c4adb31b6173dafb35c0f2f6c4443f6caf",
+          "sha256": "964b68ad0dce47aeb6c13b9e9165c2d5fa9bfee7f2681035c60430c5c8cebb94",
+          "size_bytes": 22568
+        },
+        {
+          "path": "core/shader/recompiler/PatchSpirvTools.cmake",
+          "mode": "100644",
+          "git_blob": "4acc117b3bd84dc2ded8837ae9d0558b22b1c9b0",
+          "sha256": "bd12b9d9559298ecd0eda07e39f64fd0c5f362447e9b2b500c1e829395cac091",
+          "size_bytes": 7814
+        },
+        {
+          "path": "core/shader/recompiler/ShaderCacheVersion.cmake",
+          "mode": "100644",
+          "git_blob": "b3cbea2c75caa6254fb4d9679b9a720b36e65245",
+          "sha256": "70a4153543e9d26949a8207a52d4a0019ebe535a153c08d4a765d991b449fd40",
+          "size_bytes": 7195
+        },
+        {
+          "path": "docs/dev/BUILD.md",
+          "mode": "100644",
+          "git_blob": "1154ea812c3dde2e430fb985b95b68a6ccb21dc3",
+          "sha256": "d6c261a8c5262503eea62c424919839ddf4a8bc908859088c8a4c3b70d43af0f",
+          "size_bytes": 64899
+        },
+        {
+          "path": "docs/dev/debt/libSceIcu.md",
+          "mode": "100644",
+          "git_blob": "f38e916c26422e5a2774cdd154f5c0ce2a591c6c",
+          "sha256": "16e7bb569a0da4780399a225bf36eede5065bd19cff4f864f097864b191282b2",
+          "size_bytes": 3080
+        },
+        {
+          "path": "tools/nid_names.py",
+          "mode": "100644",
+          "git_blob": "920876f1b3f116b59a5afb51539dd5743dc37673",
+          "sha256": "00db4e54a2b8b5d9e700782bedf327ae5132be104c5c93297c1bb7b51c7f7067",
+          "size_bytes": 11311
+        }
+      ],
+      "direct_gitlinks": [
+        {
+          "path": "3rdparty/LibAtrac9",
+          "commit": "946e05a9212976626a9f5e52f29c0a7202871f29",
+          "declared_url": "https://github.com/shadps4-emu/ext-LibAtrac9.git"
+        },
+        {
+          "path": "3rdparty/SDL2",
+          "commit": "4b69833bc54abf3dd3288d4aa7afbba527775e5b",
+          "declared_url": "https://github.com/libsdl-org/SDL.git"
+        },
+        {
+          "path": "3rdparty/SPIRV-Headers",
+          "commit": "b824a462d4256d720bebb40e78b9eb8f78bbb305",
+          "declared_url": "https://github.com/KhronosGroup/SPIRV-Headers.git"
+        },
+        {
+          "path": "3rdparty/SPIRV-Tools",
+          "commit": "262bdab48146c937467f826699a40da0fdfc0f1a",
+          "declared_url": "https://github.com/KhronosGroup/SPIRV-Tools.git"
+        },
+        {
+          "path": "3rdparty/Vulkan-Headers",
+          "commit": "2fa203425eb4af9dfc6b03f97ef72b0b5bcb8350",
+          "declared_url": "https://github.com/KhronosGroup/Vulkan-Headers.git"
+        },
+        {
+          "path": "3rdparty/VulkanMemoryAllocator",
+          "commit": "a1d434708c217b2a6c7b365f1fe41fa03a562e59",
+          "declared_url": "https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git"
+        },
+        {
+          "path": "3rdparty/ZArchive",
+          "commit": "965b66c8d67b6b7e30fd63b3b75aa91a99ff303b",
+          "declared_url": "https://github.com/Exzap/ZArchive.git"
+        },
+        {
+          "path": "3rdparty/ffmpeg-core",
+          "commit": "9ac4cfd195f192ed8b08566f49c28dbb48d08341",
+          "declared_url": "https://github.com/KytyPS5/ext-ffmpeg-core.git"
+        },
+        {
+          "path": "3rdparty/freetype",
+          "commit": "42608f77f20749dd6ddc9e0536788eaad70ea4b5",
+          "declared_url": "https://github.com/freetype/freetype.git"
+        },
+        {
+          "path": "3rdparty/glslang",
+          "commit": "ba1640446f3826a518721d1f083f3a8cca1120c3",
+          "declared_url": "https://github.com/KhronosGroup/glslang.git"
+        },
+        {
+          "path": "3rdparty/jxrlib",
+          "commit": "f7521879862b9085318e814c6157490dd9dbbdb4",
+          "declared_url": "https://github.com/4creators/jxrlib.git"
+        },
+        {
+          "path": "3rdparty/libjpeg-turbo",
+          "commit": "c85e6b905bf237038faa936dab160ebfc5da0344",
+          "declared_url": "https://github.com/libjpeg-turbo/libjpeg-turbo.git"
+        },
+        {
+          "path": "3rdparty/libusb-cmake",
+          "commit": "bea6567b63796ab27c1c33257d230284fb2d8316",
+          "declared_url": "https://github.com/libusb/libusb-cmake.git"
+        },
+        {
+          "path": "3rdparty/mbedtls",
+          "commit": "068ff080b369adfac81509f9b57b2afabaf82dc5",
+          "declared_url": "https://github.com/Mbed-TLS/mbedtls.git"
+        },
+        {
+          "path": "3rdparty/mimalloc",
+          "commit": "f8401befa675adb13b98decababd7fdc59572477",
+          "declared_url": "https://github.com/microsoft/mimalloc.git"
+        },
+        {
+          "path": "3rdparty/nghttp2",
+          "commit": "85e300c79fb6dbcfa9c1013215c8710c1c2cd3d2",
+          "declared_url": "https://github.com/nghttp2/nghttp2.git"
+        },
+        {
+          "path": "3rdparty/ogg",
+          "commit": "be05b13e98b048f0b5a0f5fa8ce514d56db5f822",
+          "declared_url": "https://github.com/xiph/ogg.git"
+        },
+        {
+          "path": "3rdparty/opus",
+          "commit": "22244de5a79bd1d6d623c32e72bf1954b56235be",
+          "declared_url": "https://github.com/xiph/opus.git"
+        },
+        {
+          "path": "3rdparty/stb",
+          "commit": "2c980bb59875b0d32144a71867fbdebb2f77cd20",
+          "declared_url": "https://github.com/nothings/stb.git"
+        },
+        {
+          "path": "3rdparty/tracy",
+          "commit": "30997d5ca6bb632cc10807a1da8a6d3de0aeeb3c",
+          "declared_url": "https://github.com/wolfpld/tracy.git"
+        },
+        {
+          "path": "3rdparty/vgmstream",
+          "commit": "7c520e8f9b078dfde2f84f1b5bcbad0c6c415806",
+          "declared_url": "https://github.com/vgmstream/vgmstream.git"
+        },
+        {
+          "path": "3rdparty/vorbis",
+          "commit": "c2aa86b05e981c96bf381fc6aa11cdd03eccc2fb",
+          "declared_url": "https://github.com/xiph/vorbis.git"
+        },
+        {
+          "path": "3rdparty/zstd",
+          "commit": "f8745da6ff1ad1e7bab384bd1f9d742439278e99",
+          "declared_url": "https://github.com/facebook/zstd.git"
+        }
+      ]
+    },
+    "10967": {
+      "pr": 10967,
+      "commit": "babf2bc72012bd926f35408b3d602d162a5ecd1b",
+      "tree": "e2ec3304d54d1b7fc3ac3124e399107db98c64d6",
+      "tests": [
+        "guest_icu_utf16_search",
+        "guest_icu_version",
+        "guest_icu_unescape"
+      ],
+      "targets": [
+        "guest_icu_utf16_search_tests",
+        "guest_icu_version_tests",
+        "guest_icu_unescape_tests"
+      ],
+      "expected_total": 68,
+      "critical_blobs": [
+        {
+          "path": ".gitmodules",
+          "mode": "100644",
+          "git_blob": "219621ad1add4e45a5afc1c48028a8d0afa77d8d",
+          "sha256": "81c34d5c31473c633d04b754174c021df52f0f211bbf0ba4d566f5671e857cce",
+          "size_bytes": 2497
+        },
+        {
+          "path": "CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "34a92b8586733ab26f94c0a8e0f1a4269ec899b3",
+          "sha256": "132eb9d229c602b05eecf47019e7393bb6b37067703cbe999e3d3932f13963bb",
+          "size_bytes": 27239
+        },
+        {
+          "path": "cmake/Jxr.cmake",
+          "mode": "100644",
+          "git_blob": "9e20294e31d2be85442f6ca34e387b62f6b8b498",
+          "sha256": "aa23dd7b148030f32be2e7d979af4171f5e77d4c382ffec69b667ca637f0acf9",
+          "size_bytes": 1968
+        },
+        {
+          "path": "cmake/Opus.cmake",
+          "mode": "100644",
+          "git_blob": "d6bc3e3f7862ff09fa64d27f0ec48bde8302f174",
+          "sha256": "bc89a57596d2acd090b30b079101fd5cdc16c02ab08a4ccdb6dc17c42e5040c9",
+          "size_bytes": 730
+        },
+        {
+          "path": "cmake/SystemDeps.cmake",
+          "mode": "100644",
+          "git_blob": "c679aaab3c067551a3520b84d98571d37ea53805",
+          "sha256": "9dca427fda186eb1e17756a67f2dda1848f4baea04a93d62f01444e7ffd35c44",
+          "size_bytes": 6372
+        },
+        {
+          "path": "cmake/Tracy.cmake",
+          "mode": "100644",
+          "git_blob": "d108607a060a857acfc40d037622f66af0e525dc",
+          "sha256": "1006e892f051f5e5e60e5666c988818dfd5c09524b05e6d85a70d1c699d97ed8",
+          "size_bytes": 1135
+        },
+        {
+          "path": "cmake/ZArchive.cmake",
+          "mode": "100644",
+          "git_blob": "c4c7eb2024ca3fc034041ec9460d2bc539e1b678",
+          "sha256": "7cc6446f8c030a20c2f189740fa6afa0abf3664f0e261fee51dea54596ee8bf2",
+          "size_bytes": 1202
+        },
+        {
+          "path": "core/Decoder/Jpeg/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "f16c5df8a6dee18cf13b91c22ea0f6bc50144df5",
+          "sha256": "1108099690f4c16538009278e6e157340457438a7c09439d3f747acfb13344e7",
+          "size_bytes": 3621
+        },
+        {
+          "path": "core/Decoder/Png/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "6a86166c2708730aa5c10e97f525e9e351b69a0f",
+          "sha256": "c0f0e1869be4549b34a7ec9709a6c7fda4963a595be80445d1de0dcc45a71f45",
+          "size_bytes": 1321
+        },
+        {
+          "path": "core/libs/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "b1de7b4e4a7b79c2d60bac559375344d352d91e0",
+          "sha256": "07d782f66675eadf8ab510c3b51de63f918e191b023aa556eb8c59ecacee6b43",
+          "size_bytes": 65698
+        },
+        {
+          "path": "core/libs/prx/libSceAgc/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "0d617a6e0ca7693f9625c67a1b1a733e7c2b8941",
+          "sha256": "92307af58a76f81aa15841fe07b645e85b9dbcf9022750ef27399c5e74026466",
+          "size_bytes": 24706
+        },
+        {
+          "path": "core/libs/prx/libSceAgcDriver/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "38e8ab6d62cf928710295ec857b6905d94116470",
+          "sha256": "7f73c39e3f389de3268a23c56dc6ac5dd8341d6a0d34be2e89f2e0bff28c4377",
+          "size_bytes": 284032
+        },
+        {
+          "path": "core/libs/prx/libSceAgcDriver/PostCompile.cmake",
+          "mode": "100644",
+          "git_blob": "736f3207fd0667339940f3fe51872508a377d1d2",
+          "sha256": "c889dc2a2cd23df497f7eda107a668fc4e2dbb95af4a2b36afff11c000c79b7f",
+          "size_bytes": 2069
+        },
+        {
+          "path": "core/libs/prx/libSceAgcDriver/embed_spirv.cmake",
+          "mode": "100644",
+          "git_blob": "eb0c9b94ca0b485bb7a73efd924fa07cefd9af14",
+          "sha256": "5ac5b2dd10b84986547a91543a8063ca005f39added6507254e9e302e3e6fa0b",
+          "size_bytes": 1003
+        },
+        {
+          "path": "core/libs/prx/libSceAgcDriver/tests/ComputePipelineCaptureRun.cmake",
+          "mode": "100644",
+          "git_blob": "fb150075734bf2aa56ab90610efca1d6f5bf8c9a",
+          "sha256": "411fcfb78860e2c3d4d7fd392321e81b8a3299be0a220ca42bec01d1db4ef6c6",
+          "size_bytes": 4018
+        },
+        {
+          "path": "core/libs/prx/libSceAgcDriver/tests/Pm4ReplayTool.cmake",
+          "mode": "100644",
+          "git_blob": "d578167acf7cebc7db995b99246c9d66bac14de0",
+          "sha256": "db077c1678a9e01fca71d1a6d30daea89112024174ce65de65427eb1c9839f67",
+          "size_bytes": 2300
+        },
+        {
+          "path": "core/libs/prx/libSceAgcDriver/tests/ShaderReplayTool.cmake",
+          "mode": "100644",
+          "git_blob": "9b58c1d485b95d1436d57d1b98bc2b4302ab6898",
+          "sha256": "a53eaac2b18f38ad8c68ee8b4c84ca47672632ffdb89470b9e7fbab1e0196087",
+          "size_bytes": 1929
+        },
+        {
+          "path": "core/libs/prx/libSceAgcDriver/trace_revision.cmake",
+          "mode": "100644",
+          "git_blob": "a63974e68e13fa1b9e3bfd8bac815f0d60c6eb8c",
+          "sha256": "d2a1b2366ed05162c319022fc4bdabb4574e2b71f807b6361493afb214f9b893",
+          "size_bytes": 879
+        },
+        {
+          "path": "core/libs/prx/libSceAjm.native/AjmLibrary.cmake",
+          "mode": "100644",
+          "git_blob": "ec9f5b9a81bf6a40621ab2b9eab9cd1f07a98bf0",
+          "sha256": "4790603dccae154584eefd70b147a95fbfb4922a909048125629496e3b1156a6",
+          "size_bytes": 587
+        },
+        {
+          "path": "core/libs/prx/libSceAjm.native/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "8734851197e6cb64b81550de3af27593d4b23134",
+          "sha256": "b22d764a4abdb6bb02e2a84bbe6cba8ca97ebcf1e8ecd97dd6c480903df0b08d",
+          "size_bytes": 4876
+        },
+        {
+          "path": "core/libs/prx/libSceAjm.native/PatchLibAtrac9.cmake",
+          "mode": "100644",
+          "git_blob": "ed0a64c6e9e2a553e6252e554ca33dee46f683fc",
+          "sha256": "4fa2bdc4175357034c4d54890b03db89310dd2639bc25e59d6b5b9fcd59b40bb",
+          "size_bytes": 3650
+        },
+        {
+          "path": "core/libs/prx/libSceAjm/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "7a9c708eaef7d2529105872d68ded2a505ef1310",
+          "sha256": "250f5387946078af1560552e5a53e1da463460caee610e7317364985bddf17e1",
+          "size_bytes": 144
+        },
+        {
+          "path": "core/libs/prx/libSceAmpr/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "f9898075a10e4b9706d1cb13444ad84b6ec3c89e",
+          "sha256": "c414b9314a06cffd6d10a3e120a0efdd2e0f7ecb3bf0cc0e12fd778d12ddd24b",
+          "size_bytes": 2786
+        },
+        {
+          "path": "core/libs/prx/libSceAppContent/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "b1deabb076d462d5933af114a57f97fe6a546e5c",
+          "sha256": "98c3cfc4f7b10b4e53082ee66e024143550c3a965b7295cf736c7e06a15e20e5",
+          "size_bytes": 767
+        },
+        {
+          "path": "core/libs/prx/libSceAt9Enc/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "89880a7b92deb3bac28a616a82b93edc0efd6ac7",
+          "sha256": "abed1a57a7874723f5a5361952377df1173b8818f363ff83b297a2cf76206483",
+          "size_bytes": 722
+        },
+        {
+          "path": "core/libs/prx/libSceAudio3d/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "2d4e0247349c2c10a3652fed54030564249c7a91",
+          "sha256": "da0fcc21223c47ed4a47abcc647a2f055e0d95b7f98d7d5291d8b82ac95e0c13",
+          "size_bytes": 2686
+        },
+        {
+          "path": "core/libs/prx/libSceAudioIn/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "f25187b9c88026e0cd5e1aec84082987721cf69e",
+          "sha256": "930cf90f35234532e561f4d7ae1ab2297e16571d9543a00939987828272876e5",
+          "size_bytes": 1015
+        },
+        {
+          "path": "core/libs/prx/libSceAudioOut/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "d352122663d00479505907c8d91eec0e69600d4b",
+          "sha256": "33d8a0592cbf6c656ca75500667498194ddf3a62ceac3651a251284b615b358c",
+          "size_bytes": 17000
+        },
+        {
+          "path": "core/libs/prx/libSceAudioPropagation/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "0575687fe342831366a386e96ac5dd05c463e481",
+          "sha256": "3fade86e1a76d891e1aa31f08ae2a99070f7fa70dbfd6c8748b8f65a4d47e99a",
+          "size_bytes": 869
+        },
+        {
+          "path": "core/libs/prx/libSceAudiodec.native/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "9820917503724ea091eb6b66eec361769782c3c2",
+          "sha256": "14248fbd21bf00dd75454b027e6e25fec12ca8b240ac167f51fca597f73fa181",
+          "size_bytes": 210
+        },
+        {
+          "path": "core/libs/prx/libSceAudiodec/AudiodecLibrary.cmake",
+          "mode": "100644",
+          "git_blob": "b806bb8c0c73f04828fcff2d75d7b10c78124720",
+          "sha256": "906be12c79ad0dd21a8a02bf594610ac623002ec0bf5d92dbb496d3205a810ed",
+          "size_bytes": 573
+        },
+        {
+          "path": "core/libs/prx/libSceAudiodec/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "2e7fa84a5ecee43b222d2783a1f2cf5770855fb2",
+          "sha256": "9c0d8c072cc4b2d335e43392acbf60bca509d43107fe3715da5229610ff7f4aa",
+          "size_bytes": 666
+        },
+        {
+          "path": "core/libs/prx/libSceAvPlayer.native/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "b9a16defb77eaad9b2e8a2ded6248e4a5dc08304",
+          "sha256": "97280932b9d5f985a32947509fdbaf40a60e0af0481ecc0eb6608b794fe34f50",
+          "size_bytes": 326
+        },
+        {
+          "path": "core/libs/prx/libSceAvPlayer/AvPlayerLibrary.cmake",
+          "mode": "100644",
+          "git_blob": "32fc8bb786fc2d916a1fd1c55b845c2124cf4382",
+          "sha256": "91b1cb535dd3e05ec773125f77f263dd9d1c9e4bdbc4ba4b8a17454515bfa649",
+          "size_bytes": 651
+        },
+        {
+          "path": "core/libs/prx/libSceAvPlayer/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "d8a652d7ffc61b7e4aaa05665faa7af9af445e3a",
+          "sha256": "2fa50c97be6146e950341fcda1a49c42bf849868cf3f058cfe37682ed20baaf2",
+          "size_bytes": 2041
+        },
+        {
+          "path": "core/libs/prx/libSceBluetoothHid/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "1f7328c361ab7c586bda342262b61904d125f766",
+          "sha256": "4f94997de7bf37b4e7a73a561f01a69047034ce1543168600e8fe783faa458f9",
+          "size_bytes": 800
+        },
+        {
+          "path": "core/libs/prx/libSceCamera/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "8591dce44fee86a8a9025b201db80626cbff05e9",
+          "sha256": "1c9cb9ab2c6ae9c8e3f6b6c4133490e85024a4fa4824b97735f3ba60b8b6a71a",
+          "size_bytes": 1746
+        },
+        {
+          "path": "core/libs/prx/libSceCdlgG2P/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "f15414c7335d4d018baef76a4da09ebf53b6e42d",
+          "sha256": "df75cf2058250388e6d801374be24a3cc16393c36f0cf7fc8cb825919de0a5b6",
+          "size_bytes": 774
+        },
+        {
+          "path": "core/libs/prx/libSceCdlgPlayerReview/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "f3aa2fabdc6c8d031c06685a80710283c0c6a459",
+          "sha256": "99cc1a6bcfc5aebcc99f6e1bc378635f7874378db90d12986c3d7d4511c16527",
+          "size_bytes": 1111
+        },
+        {
+          "path": "core/libs/prx/libSceCesCs-module/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "64ae3a7a2eb0f99005c400681b1dc42b0b971e2f",
+          "sha256": "8e3b778177d3a5131c9d0fee67f7bf9181a245ffb26898a705e4899f7f551aa4",
+          "size_bytes": 109
+        },
+        {
+          "path": "core/libs/prx/libSceCesCs/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "b87f620d0893faf9316a112ff7ae9c54a91e0cc6",
+          "sha256": "52aa21edd818e20578452ca869c36aedb0f1c9a9114ae398a908e2ae488a5a48",
+          "size_bytes": 3512
+        },
+        {
+          "path": "core/libs/prx/libSceCesCs/CesLibrary.cmake",
+          "mode": "100644",
+          "git_blob": "d18971f49b2c824bb2dcd26023e6a44e62e6d0fe",
+          "sha256": "5b3367f1e4e71cb0fd5dabccc586c8ce5cf424aaf28b097fff78428ea0d9e732",
+          "size_bytes": 383
+        },
+        {
+          "path": "core/libs/prx/libSceCommonDialog/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "d3e8c4b64e748ad4d32b574503852bb0193d127d",
+          "sha256": "441c3c09409cf59af1353e908c6f84acf3a9f60fc45f192f893789e707813e07",
+          "size_bytes": 807
+        },
+        {
+          "path": "core/libs/prx/libSceCompanionHttpd/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "cdc8922b8a1cc5c17e1f7fdb5ced9390c6aed277",
+          "sha256": "cbdb413ef35b797afcfeef427e72d6e5843be1bbbfc5906c315f30a611a9d1d6",
+          "size_bytes": 1040
+        },
+        {
+          "path": "core/libs/prx/libSceContentExport/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "4dd9a470cb39d3fe93bd0337322596c356673a7a",
+          "sha256": "022b82090a0d096e08ac80f1eadcc1937a5b6f55287c25945b603130cd221d0f",
+          "size_bytes": 1380
+        },
+        {
+          "path": "core/libs/prx/libSceContentSearch/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "0c46ea1108fab2a6ff1e6cef3566b0c4125136b7",
+          "sha256": "65288438fb5261347d6f717565a16770f3a9fb4e9d83d299d0aec21cf4857fdf",
+          "size_bytes": 798
+        },
+        {
+          "path": "core/libs/prx/libSceConvertKeycode/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "341ff705b0a94022bdcd9c4c6ccf091fecd71654",
+          "sha256": "2ccf03631f3c79c59a94751e89ff45bb4bd360aab4c6a0fc838a3be7497f7662",
+          "size_bytes": 2902
+        },
+        {
+          "path": "core/libs/prx/libSceDiscId/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "a1a24f3c3062a35801d956f659a10cce93c65ef2",
+          "sha256": "3d748e4a7f9a3e656f5f45763278e9fa95951b78dac6812aa32e670c3aacad88",
+          "size_bytes": 722
+        },
+        {
+          "path": "core/libs/prx/libSceDiscMap/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "fa84f65ac28422873c353c4d864b660bd371b381",
+          "sha256": "c2eb889ef5cbf062cb9af12d14795d3ac15d50f62f170e223178505cc23d7ad1",
+          "size_bytes": 735
+        },
+        {
+          "path": "core/libs/prx/libSceErrorDialog/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "8473f24eac9f52d94812d849b06b4baaaefa8bf8",
+          "sha256": "6ed88b5015d7ac981602b112b4130e2a08f0dff7c774e04d7a7f5914d9ffbe4f",
+          "size_bytes": 727
+        },
+        {
+          "path": "core/libs/prx/libSceFiber/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "ef08d950c589d85d65e332dadc3c117fdf277b26",
+          "sha256": "6b9a05fa12d33d4e5b3ded5517b34eb3004f565dd89c0d1276e5a942371d3c00",
+          "size_bytes": 912
+        },
+        {
+          "path": "core/libs/prx/libSceFont-module/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "d0f8129c01c4c0d0de48c81bb05a91fc80291c5f",
+          "sha256": "6cd619fba046ec33374f12d4f4350dbbd0baa185ca774562a82ad4eb581fc127",
+          "size_bytes": 109
+        },
+        {
+          "path": "core/libs/prx/libSceFont.native/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "af4d2df01d8e3611009bc9365eacc1e6ec43f284",
+          "sha256": "cce2a5be1da279f61457107e8197b7ce245c71c9978cd24514f0db007f2cf310",
+          "size_bytes": 109
+        },
+        {
+          "path": "core/libs/prx/libSceFont/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "dfa37bf1215a0745606fde10cb283aacf891998f",
+          "sha256": "2c3e9579024fb8c12c32890730a642a9cc4a36ffd40b3c2c79e20555f61d04a5",
+          "size_bytes": 5572
+        },
+        {
+          "path": "core/libs/prx/libSceFont/FontLibrary.cmake",
+          "mode": "100644",
+          "git_blob": "0ae75346fec3af244a977244f1f3439fd1144946",
+          "sha256": "529147b1d2b4e91f7ebe64b44bc97e90339ab6a2243597ab9327b1e24a79e8c8",
+          "size_bytes": 963
+        },
+        {
+          "path": "core/libs/prx/libSceFontFt-module/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "07b9d9571c2c4038b2e541a42e620163b71d0d59",
+          "sha256": "26ea36be777a0c7867b9fea242c613a9a51bc46a72603170a374d1484148319b",
+          "size_bytes": 118
+        },
+        {
+          "path": "core/libs/prx/libSceFontFt/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "8bf7308eb33cfb70723ea92fa3a87945937eccdb",
+          "sha256": "4d1ac9c07fc10ff083eb7c7f264cfdf8ad849478d5b3c891a2362d6f4f57dab9",
+          "size_bytes": 95
+        },
+        {
+          "path": "core/libs/prx/libSceFontFt/FontFtLibrary.cmake",
+          "mode": "100644",
+          "git_blob": "c45bd07ab6bea3463f53402877ed1f82c9e944ba",
+          "sha256": "88d803b60b4144de0ab3fc94f132c2fe82fe5a4bc856d050b0c55d750f2d02e4",
+          "size_bytes": 570
+        },
+        {
+          "path": "core/libs/prx/libSceFreeType/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "9682b1e0b3ea08dba48a5a28bc68f1d342c51e75",
+          "sha256": "9173ff362d3cdefcd0e03634a0f08fa871493418869871efb7c801e3a57f0b0b",
+          "size_bytes": 8831
+        },
+        {
+          "path": "core/libs/prx/libSceFreeType/CurveBounds.cmake",
+          "mode": "100644",
+          "git_blob": "462dec722394c85c9b8d3a94506058c15350c313",
+          "sha256": "16ca3d7937141c479e2b71c3967545414436533940d65f2e7e62b6022d8c30ee",
+          "size_bytes": 762
+        },
+        {
+          "path": "core/libs/prx/libSceFreeType/ModuleProperties.cmake",
+          "mode": "100644",
+          "git_blob": "b4ff4952dac1b22b469d5357f1551f4d25b9d66c",
+          "sha256": "3a16f0dab89263ac72ea7ad7c7de12e3a4550ecca0e5757b8784b405bf307c91",
+          "size_bytes": 1450
+        },
+        {
+          "path": "core/libs/prx/libSceFreeTypeOl/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "e8f18eac9706315168acd3e08a1ae98088f25cdc",
+          "sha256": "5e205884b7bcb046847d53f6627cf1f06e4050611a80577fa18359ee9d6d4bdf",
+          "size_bytes": 2552
+        },
+        {
+          "path": "core/libs/prx/libSceFreeTypeOptOl/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "ed6ccae2b64cb4c969a904c5203ae5d7c8ccb32c",
+          "sha256": "bb37a6c44328e04c633b99393686b6520c5768445f348b1e4088cba045d93722",
+          "size_bytes": 2882
+        },
+        {
+          "path": "core/libs/prx/libSceFreeTypeOt/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "aca3d5c0dfcea770bc3d45f929f324249b734350",
+          "sha256": "84fa6c676b0cca7ec17843fa91056246107649117cd9c6f9144722ac97227444",
+          "size_bytes": 222
+        },
+        {
+          "path": "core/libs/prx/libSceGameCustomDataDialog/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "6f19d7891ea459927209c2dc5dbe00648b49e45f",
+          "sha256": "b7e51ba4f6df659d081d2b80e733c90fdce3129324e3fa749b56048316a10a5d",
+          "size_bytes": 847
+        },
+        {
+          "path": "core/libs/prx/libSceGameUpdate/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "a224c6ab3da2c47bf16a607839ee723931deb4a8",
+          "sha256": "7b1560a974eec60b855fb7800d24f68e251808368d430bc1cd2fc794d5cebcf7",
+          "size_bytes": 767
+        },
+        {
+          "path": "core/libs/prx/libSceHmd/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "5bf180e47841a31f5160288923ca76f904b0e16e",
+          "sha256": "6a0675a28d011782e9b0cf92a07d1161d4dbe41b6fadaad2776f3da7e2a85f48",
+          "size_bytes": 717
+        },
+        {
+          "path": "core/libs/prx/libSceHmd2/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "6d7565ac4acbdc2dff2478d01446422df3de3cc5",
+          "sha256": "f8fd86e80d2afa6b9cf40ee4abf10b8b7573fcc8ced4b5e1c3b1581fbe137a4c",
+          "size_bytes": 1301
+        },
+        {
+          "path": "core/libs/prx/libSceHmdSetupDialog/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "a294abe2b0aa17172541b2e1ddfc1384037f336a",
+          "sha256": "a690fad8e571f44ba9749f7a69248c110f61e149ebb76a938338ab0aabd1ac3f",
+          "size_bytes": 769
+        },
+        {
+          "path": "core/libs/prx/libSceHttp/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "701f264762d969ebad9ce5ba19ea5bb0ae35f1b4",
+          "sha256": "4e698ce8362d6294aada231d4c0bf612f40256bf059f9daee93c590da6bbbf02",
+          "size_bytes": 1600
+        },
+        {
+          "path": "core/libs/prx/libSceHttp2/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "de8b70d50ce9ce7b23c22f99f005960957d04d8e",
+          "sha256": "c6692920198fdbcb1a61c083f66820d5cc282243c8a9537c1f2c89d4ab543d6a",
+          "size_bytes": 4826
+        },
+        {
+          "path": "core/libs/prx/libSceHttpCache/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "da7dc5c18244f1392cf0f2b5f190e5a81e9d6be5",
+          "sha256": "4d7ad063b33efb136156abfdfa655b811ba09c1582e1cf69444e05c0080d05bd",
+          "size_bytes": 916
+        },
+        {
+          "path": "core/libs/prx/libSceIcu/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "4c1d28337f2ad98a09edfe3ccef4fff587e40546",
+          "sha256": "ae3a942af60b7917bc62b374b446ee428e473701cae8720de18968a283e725dc",
+          "size_bytes": 2176
+        },
+        {
+          "path": "core/libs/prx/libSceIcu/Export.cpp",
+          "mode": "100644",
+          "git_blob": "cef6411bce125b8ed913d932034744b79aa475cd",
+          "sha256": "3598eed7117ab29ca05270e690152575b888eb18ec579be2d25fc5d3d3942f4e",
+          "size_bytes": 19272
+        },
+        {
+          "path": "core/libs/prx/libSceIcu/Invariant.cpp",
+          "mode": "100644",
+          "git_blob": "53501ba1d6dcff5ec4834bc39abe82026f7f771b",
+          "sha256": "e925bb2a904ff4423774d77d65fac3a09b2b395c691936b2eaf7092582ffbb6e",
+          "size_bytes": 1002
+        },
+        {
+          "path": "core/libs/prx/libSceIcu/Invariant.hpp",
+          "mode": "100644",
+          "git_blob": "77e2421ef24ba16b7e0e5b16b4184f927b8e0ad9",
+          "sha256": "fadb764990cfeb04d84a7f09ea2c12eb73e52d5064fd997a8c3ae3d12f34b3bb",
+          "size_bytes": 263
+        },
+        {
+          "path": "core/libs/prx/libSceIcu/Unescape.cpp",
+          "mode": "100644",
+          "git_blob": "acf0b2abaf33377e149af6535b76a7402499149e",
+          "sha256": "fa860c03ff856de45b6b4f62df4b3b4301006691e5f21aa315519acb18d355a8",
+          "size_bytes": 5494
+        },
+        {
+          "path": "core/libs/prx/libSceIcu/Unescape.hpp",
+          "mode": "100644",
+          "git_blob": "a91eb17ed69c6be5196b2dc29e365eed739780b9",
+          "sha256": "84a896ff62c6246d9c2c4a7da3d330fdc42f3fa10aee68b41c54d2fdb31eba4a",
+          "size_bytes": 403
+        },
+        {
+          "path": "core/libs/prx/libSceIcu/Utf16Search.cpp",
+          "mode": "100644",
+          "git_blob": "8b093dfd3f26c45191280e29568030f09843f6f6",
+          "sha256": "3b93ff39706d12d26d87ef4a27aa5d596f304afc3110706ff81d41a03aa77461",
+          "size_bytes": 8080
+        },
+        {
+          "path": "core/libs/prx/libSceIcu/Utf16Search.hpp",
+          "mode": "100644",
+          "git_blob": "d57a71d2a2a55f29d9d492e3ed6b07be6c0f0190",
+          "sha256": "de9c5851535ad2bdbf4f9562c0ed47d686c01e872f4813399e233a2afb55bf25",
+          "size_bytes": 987
+        },
+        {
+          "path": "core/libs/prx/libSceIcu/Version.cpp",
+          "mode": "100644",
+          "git_blob": "5916903a8245d6adf5a3b8e9245e6aee750a6c77",
+          "sha256": "67d250acedfec0f8b29b8c0b97088554376f45b3128aa6ad118aec8ccdfb8fc0",
+          "size_bytes": 1995
+        },
+        {
+          "path": "core/libs/prx/libSceIcu/Version.hpp",
+          "mode": "100644",
+          "git_blob": "4963a77ed25f79623bb3a7205f394f30dd4939cd",
+          "sha256": "8e0ea4a20a08f4ea443eb064fe6b320232d007bf4bac0a8a6aafda942d4a687e",
+          "size_bytes": 330
+        },
+        {
+          "path": "core/libs/prx/libSceIcu/libSceIcu.hpp",
+          "mode": "100644",
+          "git_blob": "cefa243558957d22bff64a3deec416b8a634beae",
+          "sha256": "1da7b17715ed85d05922935efd27839f8e77fb061b4d09da414a5793683700e7",
+          "size_bytes": 112
+        },
+        {
+          "path": "core/libs/prx/libSceIcu/tests/Unescape.cpp",
+          "mode": "100644",
+          "git_blob": "1dc71529407172d6fa73033c7cc4e8697a59f602",
+          "sha256": "e679f1505e59c6937b28f870b32d258e5a1bea8b871944d80f869470584402ff",
+          "size_bytes": 8669
+        },
+        {
+          "path": "core/libs/prx/libSceIme/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "2e471a09d6fd3d855f53938fecec696973f28256",
+          "sha256": "a43ef18200badbcee4ca7e97cf42d7b672a2b3df72fb8004a0e443688278a06e",
+          "size_bytes": 3135
+        },
+        {
+          "path": "core/libs/prx/libSceImeDialog/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "e3b25d8fa2e0ddef6c0d1672c97114cbde43ab61",
+          "sha256": "583883cf0a8948675a10a2f02dc514de5e67c5120c7c3a3fad0eea6e5dbc1cf4",
+          "size_bytes": 1508
+        },
+        {
+          "path": "core/libs/prx/libSceInvitationDialog/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "56b44db4a682cf2e20d29c57f109d85a7a11de5c",
+          "sha256": "405a509ce1bb14682708f954140f793bdb541fda0ca7a59dbaccbbaa6d8fb039",
+          "size_bytes": 949
+        },
+        {
+          "path": "core/libs/prx/libSceIpmi/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "f549ae49f19b0e860f67e30cbcf49a179fa74749",
+          "sha256": "cfcca931fe53373090b5f63e19995353f44934dd47612cf2590f74dd6426ad5d",
+          "size_bytes": 182
+        },
+        {
+          "path": "core/libs/prx/libSceJobManager/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "1364b0e64d76fac0d488dd9f7b7ef913ace8a1a9",
+          "sha256": "46adb8c87ea1396e6ccaf8b15d7cd696c2eafcfffbdbc4d16be685f6818aa5b8",
+          "size_bytes": 6301
+        },
+        {
+          "path": "core/libs/prx/libSceJpegDec/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "141c7e25d0a44efc95462582c6c85e72c1f30337",
+          "sha256": "c7ab3fb0ed55b190b444de34992d25ea9523a4b976dd3b5e5bdddbd9445ea280",
+          "size_bytes": 978
+        },
+        {
+          "path": "core/libs/prx/libSceJpegEnc/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "d92ace87088693e79afddcb810985106df8d231f",
+          "sha256": "a3cf10fd4ff8e2a770ee551779db359bc6a599836f5f314da871d701c452a4d0",
+          "size_bytes": 978
+        },
+        {
+          "path": "core/libs/prx/libSceJsc/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "73915bc4fff0cd342ecd17c79095e44611acab18",
+          "sha256": "70fbdb6a148b3e521479030f2832fc879f081fe787d8ca3c0eb49374fd6f8915",
+          "size_bytes": 731
+        },
+        {
+          "path": "core/libs/prx/libSceJson2/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "cf4780cf800f13b0ea289f9d20e875a1fd21a6de",
+          "sha256": "83f9c200b1513ea0a06822821a8dc2d13570373c9ee246b54b2170f458a4209b",
+          "size_bytes": 2475
+        },
+        {
+          "path": "core/libs/prx/libSceJxr/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "c94b793736323590bbc52217198f221f0e9776b6",
+          "sha256": "4c432279d539e1348d51a0c04c0aab28b11809e4f1eb859cea35a0ffbee7c14e",
+          "size_bytes": 4177
+        },
+        {
+          "path": "core/libs/prx/libSceKeyboard/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "6f23ed265fed99c78fc427f8bdd528874af716ad",
+          "sha256": "f7018ce4f45a98dd10c204305b97dd8a0ee17723f6ac897c3c28b811ca50af07",
+          "size_bytes": 995
+        },
+        {
+          "path": "core/libs/prx/libSceLibcInternal/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "f17760d17910449be1be2b0526c00df124742f25",
+          "sha256": "74dda2ee29aa86d7545235460e0e093b5c5c2e42c50599c4fa4295091c5a3603",
+          "size_bytes": 11145
+        },
+        {
+          "path": "core/libs/prx/libSceLibreSsl/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "0033e0157c81854603a174193d3e67fef2ef4775",
+          "sha256": "f4371b899f69ff435d3c0043a44ba0f826d71965c3bbe68f6b9dacd62936afc6",
+          "size_bytes": 14608
+        },
+        {
+          "path": "core/libs/prx/libSceLibreSsl/ProtocolSelection.cmake",
+          "mode": "100644",
+          "git_blob": "111f818aecc7918d9328ef0425aa6dd4970840ba",
+          "sha256": "875bdb968f3d4fae937c71a6fd1924fcd6496194cd81f011a11e39d96307ed40",
+          "size_bytes": 1247
+        },
+        {
+          "path": "core/libs/prx/libSceLibreSsl3/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "c787bccfeaa1c3aa97e8ea6bc74da61d67083755",
+          "sha256": "317ef097395a33b80b99511cf85cec59374cec44cabed7c5eeb83285c979da82",
+          "size_bytes": 2587
+        },
+        {
+          "path": "core/libs/prx/libSceLoginDialog/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "f02e58a6b4992885334cb0bab613db6a6d49c3dc",
+          "sha256": "6d4fbc443e5122c130c9468ae77163f0d82dc6765168fbe29e91a7bdc19c8d7f",
+          "size_bytes": 727
+        },
+        {
+          "path": "core/libs/prx/libSceLoginService/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "5993f09b494d15a1925e646b160bd0c9ac60307f",
+          "sha256": "db08d0b8baa688d4d65b91b6909287e0d983546cd270524a43af7c36d2535549",
+          "size_bytes": 800
+        },
+        {
+          "path": "core/libs/prx/libSceM4aacEnc/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "85a6f282a7f8efec0c5dffc477bba437e2bac375",
+          "sha256": "934d5c7ceb52b746289e75135bafd71b0c616d54d38584a87bbb9ed59e9df18b",
+          "size_bytes": 748
+        },
+        {
+          "path": "core/libs/prx/libSceMbus/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "9de325ed3fcd647a597a47f476fb50adb886a0fe",
+          "sha256": "e7e0b34942a224fc421f57e16fac13856978f905172a87a057bc8c9115a24357",
+          "size_bytes": 708
+        },
+        {
+          "path": "core/libs/prx/libSceMouse/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "b7f58761da875ab984caeb53567c0c752292d78f",
+          "sha256": "b0b369ec67e2fcd42d6207a157e2142a3667932a9580f01c097a0de4c3e82db1",
+          "size_bytes": 959
+        },
+        {
+          "path": "core/libs/prx/libSceMsgDialog.native/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "deefade5ae00a2f2d6964d21564d712cbec01d56",
+          "sha256": "1b5ecc0ac8b77d118c28700b68c0fd525fa347a5ec1926a7cfbb827cf099ad78",
+          "size_bytes": 786
+        },
+        {
+          "path": "core/libs/prx/libSceNet/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "acc487792edc19be5ac251322e52de03914a2817",
+          "sha256": "23fae02b7dc59d20918337a55b70893200aec7918bd04737745c087e4650b3a6",
+          "size_bytes": 14418
+        },
+        {
+          "path": "core/libs/prx/libSceNetCtl/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "6907cd9fb7a1db6e0dd35f56b07fb01b6e776b68",
+          "sha256": "ee51c941352c072dade0928294f1ef29ef084e9b82bc659188939f078e284db8",
+          "size_bytes": 1542
+        },
+        {
+          "path": "core/libs/prx/libSceNgs2.native/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "525fc51f022a2793dad5ab9b7727e36d3296062d",
+          "sha256": "4a3f1b1a9246ff16c9c91104ff4e21338900bccebb3e919e4dbda3f93691d186",
+          "size_bytes": 2143
+        },
+        {
+          "path": "core/libs/prx/libSceNgs2.native/Ngs2Library.cmake",
+          "mode": "100644",
+          "git_blob": "27dde605fe946a70f077f171f655f1caf5392b48",
+          "sha256": "259b5cdb024dc6d2d82dd99db76e770aa9a66cda03d40f4e6313c0c0e5fee689",
+          "size_bytes": 1659
+        },
+        {
+          "path": "core/libs/prx/libSceNgs2/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "d64e678c3ef2556f0027ad33e2753ffa9e5728eb",
+          "sha256": "118b60a49a75f7bf1e79ef996becfe0829e6b84d7db7f0dfc67e7f012eed7f27",
+          "size_bytes": 2777
+        },
+        {
+          "path": "core/libs/prx/libSceNpAuth/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "67acfa7500f27d380ddb58c8d428f1656a3ca64c",
+          "sha256": "aeae0a538df956a812dc7970256ca8cd1e5fe4aa6f7ed3ef066fb6d1a021a2d7",
+          "size_bytes": 879
+        },
+        {
+          "path": "core/libs/prx/libSceNpAuthAuthorizedAppDialog/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "15dcbb4f2e6e6fd937dd7160465610a1811b332a",
+          "sha256": "44a67badbd9cbd5e7908721991e063402a86eb2fa5307cdad1499c0bd12e7e44",
+          "size_bytes": 1013
+        },
+        {
+          "path": "core/libs/prx/libSceNpCommerce/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "1c59d83752808c4f9a3cfb4016a438139f0cd6c3",
+          "sha256": "ae019cb1af929ec677f9a6780077bf32ebb96155a13ba44e857dad4b32bc1102",
+          "size_bytes": 918
+        },
+        {
+          "path": "core/libs/prx/libSceNpCommon/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "d4cc13ef6505b6d537888e13ab61e2c6d90d98a3",
+          "sha256": "89b09be3f6711bfaecd8ae6f4ed781d036250056ffe27c18e581e563a1d23d56",
+          "size_bytes": 1078
+        },
+        {
+          "path": "core/libs/prx/libSceNpCppWebApi/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "2519e8cc810122e7b621e9bc94428af900d6722c",
+          "sha256": "a5451704776dab8b64afabe44c0cb6fc08eb2b142392d279a0b916732589ff02",
+          "size_bytes": 1057
+        },
+        {
+          "path": "core/libs/prx/libSceNpFriendListDialog/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "219499b30b2535dae656c909ae68274c2f5e89e3",
+          "sha256": "8ebbe7a413088feec0271b4a734d1d72bfb95e47f9d9452dcecf51582c42212a",
+          "size_bytes": 823
+        },
+        {
+          "path": "core/libs/prx/libSceNpManager/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "cd99c36b34d6f55c05eb1450c1923c3e0481ba5f",
+          "sha256": "713eef0330da534d6db4a5ecee798d98c4cf5497d3123d0782b3af5a051ecf76",
+          "size_bytes": 1566
+        },
+        {
+          "path": "core/libs/prx/libSceNpMatching2/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "06978af7adf356d0af00d36dcf8a7abe9df19088",
+          "sha256": "41d0e23ea18aadf94e97d8d230b003dabfb074322b0d6ef0990cb50bce6e8ecd",
+          "size_bytes": 920
+        },
+        {
+          "path": "core/libs/prx/libSceNpPartner001/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "c339e97d94da90deef648cf9ecbf063652099fbf",
+          "sha256": "0355d25511b463e0f69e752f6c00792fc1e0b0789f36661ca8c1450d915bf3aa",
+          "size_bytes": 776
+        },
+        {
+          "path": "core/libs/prx/libSceNpProfileDialog/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "64065918085b46af909c901b217ce4babae222df",
+          "sha256": "dfacf0a5607b75feda56f19553930d7f1af9adda004cde4715a356ce8f732900",
+          "size_bytes": 904
+        },
+        {
+          "path": "core/libs/prx/libSceNpScoreRanking/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "d73264a441d154a216612b70b4997d2d154f52a9",
+          "sha256": "a9679eeca9b198edada99221f47508c61633afe53cadaf33ee000db9c9192108",
+          "size_bytes": 899
+        },
+        {
+          "path": "core/libs/prx/libSceNpSessionSignaling/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "51dd193aa8e58e65d78813a8694fb3a8d5ff6e7b",
+          "sha256": "345651170d28472cbe78a62803d8129a3abed92ee7fb15e35b4e91c0ca6d9896",
+          "size_bytes": 817
+        },
+        {
+          "path": "core/libs/prx/libSceNpSignaling/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "a5ecdbd9440f1b16894877ba5a5de458957ddd6a",
+          "sha256": "4892a56e65b37256516df52ff351fa7bd360287ebf437dde0c18ef438ad76be1",
+          "size_bytes": 920
+        },
+        {
+          "path": "core/libs/prx/libSceNpSnsFacebookDialog/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "5445d0ddddc0efcbe55cc4e6cbafede315e3121b",
+          "sha256": "e9ff7ae67b58e11188a0812b5b648576d31337db399072fa403aa8492384112c",
+          "size_bytes": 835
+        },
+        {
+          "path": "core/libs/prx/libSceNpTrophy/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "7301fa20ab41570d230724b9714613624cd52c18",
+          "sha256": "c45c9f91ca17f05d5907db817912ef6b9b8897fbaad39ca86c01d322666e5d82",
+          "size_bytes": 807
+        },
+        {
+          "path": "core/libs/prx/libSceNpTrophy2/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "7f9d3efe3ac873380202f649b7589e1371e9ba91",
+          "sha256": "894e890cc185eed22e915e362473e108590d615423966183237cb1d268a6044c",
+          "size_bytes": 2598
+        },
+        {
+          "path": "core/libs/prx/libSceNpTus/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "6046093997bf612f7d74d2a3414bcb61fc297e9e",
+          "sha256": "f62f654d73ea4d0ee4089b0aa0c5af554a5fc411cbf2202de562c071a2ee1baa",
+          "size_bytes": 1248
+        },
+        {
+          "path": "core/libs/prx/libSceNpUniversalDataSystem/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "b74a51652bc0a5b70b31e4160bd13967efb2f0d1",
+          "sha256": "e01f4ab036d0f387881dded7215618d728cce4bc3118bf1c32d30db0ea5cafef",
+          "size_bytes": 4162
+        },
+        {
+          "path": "core/libs/prx/libSceNpUtility/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "982e5ab6208a8589b30f7f8577b546911cba6797",
+          "sha256": "023a25a784ad85a57270c230d061aea66fffd8b83b50739cbd62969fdeae6fad",
+          "size_bytes": 892
+        },
+        {
+          "path": "core/libs/prx/libSceNpWebApi/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "0e3e193000c559ca3f4a5013ff0ec3cd5a5c6b12",
+          "sha256": "152b2bb24bf2842599492cb4496114b99da3e203a7356137d64afafe6d107597",
+          "size_bytes": 815
+        },
+        {
+          "path": "core/libs/prx/libSceNpWebApi2/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "1fbafd28386cde779fe54c07a58936919ea14603",
+          "sha256": "d42b809cb3f1f47c2e00301fd7d87abb6b60903af1f9f4201d9d641f25208fae",
+          "size_bytes": 840
+        },
+        {
+          "path": "core/libs/prx/libSceOpusCeltDec/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "38a71d09b5accc64ca7164983f0f61a0cd4d27b8",
+          "sha256": "2bd6039c40d50224322918fa9d2b1c434d3c213a2a7e32c4cc92780bdff7fb59",
+          "size_bytes": 881
+        },
+        {
+          "path": "core/libs/prx/libSceOpusCeltEnc/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "c988c3c633ed45f5748ee35e58bbfd9488088fb5",
+          "sha256": "256ed6604c92faa30e2ecb4e5b47a72a7b8482981f236b27352976e6739db37a",
+          "size_bytes": 881
+        },
+        {
+          "path": "core/libs/prx/libSceOpusDec/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "4356e19cabfe108b137c77f2a3dd7ed0602b22d9",
+          "sha256": "bc766ee0b71f4d50194f05de1317cfffb27dfcdeea52d3782e74048619b677d2",
+          "size_bytes": 1530
+        },
+        {
+          "path": "core/libs/prx/libSceOpusSilkEnc/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "de311aade8d0a30a98bfbd465718ae5dbbdb53e5",
+          "sha256": "df6881eaf6f369947f9b5960e4576dcdf3e79ec8cebbf85e75c5350a97093606",
+          "size_bytes": 881
+        },
+        {
+          "path": "core/libs/prx/libScePad/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "b979e5344cf2cc33677e29f856418e0e05eb63bd",
+          "sha256": "35819cfd1e494f40afd698ca1be0255d054fb19de61f6d027bc64a5a75861542",
+          "size_bytes": 1482
+        },
+        {
+          "path": "core/libs/prx/libScePlayGo/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "a96d8f5a368f42f8769d178b661b71964a9a46d9",
+          "sha256": "05f1049435d8f8752cf5d6b6aee7807c1b03abc92a79e36b7f607f757763bf63",
+          "size_bytes": 715
+        },
+        {
+          "path": "core/libs/prx/libScePlayGoDialog/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "207b14523e906b116875c1a9c1f8caf94011eafa",
+          "sha256": "adadc6ed2193163e573326c8509c63db6640a798a71e3e4b0edb9311d6a98185",
+          "size_bytes": 900
+        },
+        {
+          "path": "core/libs/prx/libScePlayerInvitationDialog/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "bf346c10396c8883c05ead44aa08fa9c5eb8d809",
+          "sha256": "8beac30b88bb11425a775c074c4a51e1d4026f261c26ab328aacebddcff64af7",
+          "size_bytes": 888
+        },
+        {
+          "path": "core/libs/prx/libScePlayerSelectionDialog/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "0d85abead0d9947e6c286bca0afe00a6e5304a49",
+          "sha256": "67ab1f6c409798437c68907bebd5f024785d6c2f2a14f1a2928d9fbb3712bae0",
+          "size_bytes": 1019
+        },
+        {
+          "path": "core/libs/prx/libScePngDec/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "74413ac2d3120422e9f0f34747818acbe149b969",
+          "sha256": "b0ff9840d77597d882f87be107d0f5735d8a7a3b76e4dd53081a940a4b204e99",
+          "size_bytes": 919
+        },
+        {
+          "path": "core/libs/prx/libScePngEnc/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "9999a3f5201421abbbf389ae07f3d09ca2abf6c4",
+          "sha256": "88f53cf263db19cb41fb7d4d2475b63a186c0bff0f68099fe92bca0a494a1434",
+          "size_bytes": 884
+        },
+        {
+          "path": "core/libs/prx/libScePosixForWebKit/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "9f28aee996578d46ee975e98dcca378caaefd9b9",
+          "sha256": "e2fedc127ac3d4a91ff0f1f922a986147915f428f8f4715e4ebf805c3ccce155",
+          "size_bytes": 4961
+        },
+        {
+          "path": "core/libs/prx/libSceProprietaryVoiceChatHelperPrx/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "4feb3ddf253ca063f22f60e9127d78d78fb87d0c",
+          "sha256": "10983b897b1bc72f735dcfe8cfab6e644e8b503a2b986cc5242dc8f1653faa15",
+          "size_bytes": 1011
+        },
+        {
+          "path": "core/libs/prx/libScePsml/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "121b19bff112fcd6cf5cff7ea4fdd8adf649adb6",
+          "sha256": "1515dde0b81c821fb4408c5b9ecc59501f0898ad3a27d006522ac15a123f23e8",
+          "size_bytes": 108
+        },
+        {
+          "path": "core/libs/prx/libScePsml_debug/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "aceb0af75095dab77a057cfc7f241dbb08e012fa",
+          "sha256": "2861109d1ece59bbdde7ff6f1cdd6465344d7d908f25adbcaf788f75bd75b4b0",
+          "size_bytes": 632
+        },
+        {
+          "path": "core/libs/prx/libScePsml_debug/PsmlLibrary.cmake",
+          "mode": "100644",
+          "git_blob": "69fe16dbf32960ac8aea9b3e913b841480a8d8d0",
+          "sha256": "d0c981b76e6d4ee1a7d7af0cc3f37dd152c87ea02eeb2e9b1e50b898d45bc9b0",
+          "size_bytes": 259
+        },
+        {
+          "path": "core/libs/prx/libSceRandom/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "0a15d269d1cc38fa907ab3d8cc015e92550a7139",
+          "sha256": "eaa2089c3e9808f514df2ad82982c65d107a543f645b6acf444217d026849bc5",
+          "size_bytes": 661
+        },
+        {
+          "path": "core/libs/prx/libSceRazorCpu/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "e4d7808ed930ff68c246f8c8419189b780790ef1",
+          "sha256": "5e7f59784972bed88695b5dc014669179654f7bdfb8147228e66d9873ea270f2",
+          "size_bytes": 743
+        },
+        {
+          "path": "core/libs/prx/libSceRegMgr/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "e10c382e33d826273781356b77d987cdd3c53566",
+          "sha256": "d883279cf43d02a575c0e550e83a477395898099a5631569e861a31c46d6dd6a",
+          "size_bytes": 715
+        },
+        {
+          "path": "core/libs/prx/libSceRtc/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "1411d4f9369b127e48ac2dbbdccf67e7a95a061e",
+          "sha256": "17c3418369074a36549649080c87a26431fcc038f8cecfe8ff9b0f66ee9b8e09",
+          "size_bytes": 825
+        },
+        {
+          "path": "core/libs/prx/libSceRudp/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "2f8f0c7420ff13d1451abf2af28118a830c40599",
+          "sha256": "397fafa08238d2c6611f02bfad64e165e4540ae4f762fef59079dfe48da8d1f7",
+          "size_bytes": 960
+        },
+        {
+          "path": "core/libs/prx/libSceSaveData.native/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "5236fba466e70117be322f08e2a68408a8a54ff6",
+          "sha256": "42854cde389147c7e6d29650ac4c2bee42d96a5f329f7a4f4a45d324930abd44",
+          "size_bytes": 3843
+        },
+        {
+          "path": "core/libs/prx/libSceSaveDataDialog.native/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "ddbc456db5cae3c08da84e3eebf908fbc8510df5",
+          "sha256": "602fabdba8ff55dbfb3d054d681a9895fe3b356f5e2d1412d568fd6eca841ad5",
+          "size_bytes": 856
+        },
+        {
+          "path": "core/libs/prx/libSceScreenShot/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "0300d678fa8ae9821689c4e51c41e64c4363a185",
+          "sha256": "9bf01e586bab9d96a0f043a3ecbd55b4d931ccc5032596be1799c6f69eca5611",
+          "size_bytes": 901
+        },
+        {
+          "path": "core/libs/prx/libSceShare/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "f0f7bb67ccc45be0bda3c024747eb4541b797e90",
+          "sha256": "7a50a6a6dab48a6e3c69f0400d2f6a7385a9d6b2a421ff133f8c9e749d6f6ceb",
+          "size_bytes": 649
+        },
+        {
+          "path": "core/libs/prx/libSceSharePlay/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "1560813dab2f8b214d9fb3072d0136e2c6f490d0",
+          "sha256": "feb11631f1e29cc04609abd155f3ceddace0d1f882b55ae148a2e56dc403a2a6",
+          "size_bytes": 761
+        },
+        {
+          "path": "core/libs/prx/libSceSocialScreenDialog/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "83af8dda26f1312b66ed268bb1043ab1b08f7393",
+          "sha256": "b36d1cb3b472c5c148239b9c454caaac9ee6df84c938e566b5e7f3539404c02b",
+          "size_bytes": 817
+        },
+        {
+          "path": "core/libs/prx/libSceSpSysCallWrapper/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "5e407e9a3701e6e938c57e28061eaeb03cde4a14",
+          "sha256": "40b03cb0d718cde493c9cef1aafdfaaccc88a58b3f5bd0a72ed65ea516f4784b",
+          "size_bytes": 943
+        },
+        {
+          "path": "core/libs/prx/libSceSsl/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "cf5b24b0140a3ee834638ed75a8076910d8b339e",
+          "sha256": "d1e53d8ca35bd1a1cea6133c6441d70ad676986e07c630d6f3eccb8e1bbcb540",
+          "size_bytes": 5947
+        },
+        {
+          "path": "core/libs/prx/libSceSulphaDrv/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "649d75c4d0c5ccd7651c56e9a59892d0313787ed",
+          "sha256": "fe214642e2fea53361f27144f66506ec4e9a723a038b1dadcbb4ef5cc8dcd353",
+          "size_bytes": 832
+        },
+        {
+          "path": "core/libs/prx/libSceSysmodule/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "b03a2433c9ce9f83be9e819f911fbd402075265d",
+          "sha256": "16a96b38f4817d2e3cb06a08dcea5e404722b7e7671dea31ef8613adeb944d97",
+          "size_bytes": 1786
+        },
+        {
+          "path": "core/libs/prx/libSceSystemService/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "7d8a4c65d6dc045212e5446892c828d2b13f9190",
+          "sha256": "920fbae8485fb490eda69eb05c005dff01eaa1d0af8cfd6d00e09ef667096e1d",
+          "size_bytes": 10722
+        },
+        {
+          "path": "core/libs/prx/libSceTextToSpeech2/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "cb54c13843b00d99f1c5b251d31a23cb09f32472",
+          "sha256": "48f1e34f80c6172945df2e45fba9d043db1ed1bb7ade287b94521b86bf87ed34",
+          "size_bytes": 820
+        },
+        {
+          "path": "core/libs/prx/libSceUlt/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "57362053844d7204016f1cfaec70d46fc0315c9e",
+          "sha256": "f8e7937f27f8763b8abd51ed0ce9efa50575dadbea2f441855aa5370793a29c6",
+          "size_bytes": 4220
+        },
+        {
+          "path": "core/libs/prx/libSceUsbStorage/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "9be261a1355effbb4dcf817725dfd94dfb9c4e58",
+          "sha256": "8037467e46ebebaeb1b657e1b1cc5d85e5b1e28f7101ca89a5cd264ca62c983e",
+          "size_bytes": 1007
+        },
+        {
+          "path": "core/libs/prx/libSceUsbd/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "0ae07d11b513d95273b7052b8251f23070395459",
+          "sha256": "ba3c1811d07b16aa211b4213a15d66e1758ef908796e1737c066231d0469011f",
+          "size_bytes": 856
+        },
+        {
+          "path": "core/libs/prx/libSceUserService/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "282c8e98a35ee0af2a0e5491ff07c87f7052573d",
+          "sha256": "caa1a7d9ebe6da1100b1f97230f5866228ed4dc94393e6d30ec0e98b608e6242",
+          "size_bytes": 2139
+        },
+        {
+          "path": "core/libs/prx/libSceVdecsw/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "6d41dc24e9e1d14f3dbaa2e597e5b0cd0e90e5a7",
+          "sha256": "3d2d926f63abb6639fcf1aec0d2f08685802021720aac6a96da691b49cba686c",
+          "size_bytes": 830
+        },
+        {
+          "path": "core/libs/prx/libSceVideoOut/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "ae318bdedcf16f6fcb7e660d9a583781ecadef94",
+          "sha256": "e14d756db8f178b0b1563387aadd2101613b75b3a58b2171a4a55a2781fdf0da",
+          "size_bytes": 19350
+        },
+        {
+          "path": "core/libs/prx/libSceVideoRecordingP/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "ba8c08e28a27051b3a7df6007f5503c778772152",
+          "sha256": "7319d22f8a61bb4cc2f8623ecd8442a6da29ff062625fe8d1484601759efa12a",
+          "size_bytes": 831
+        },
+        {
+          "path": "core/libs/prx/libSceVideodec/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "9289cda4e6cd873626847bf1b24da1f8d8eb7c22",
+          "sha256": "69b17b99aa995678c79d719297d751a9b575537d0d83a2fab7c6f0f84d682efe",
+          "size_bytes": 858
+        },
+        {
+          "path": "core/libs/prx/libSceVideodec2/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "244b8050b3c4322d1fc0277e4c5fbd4b4a4bb5be",
+          "sha256": "d67c9c2696d23f67165314a376a4429847e468e30e0463979c6f7e0162832a8b",
+          "size_bytes": 2264
+        },
+        {
+          "path": "core/libs/prx/libSceVoice/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "e2cc5765c8b4575204e6a99f2e60bd0c1a374ba5",
+          "sha256": "48cf8f4154baaa6e8f6da547f3e83b3781a7e98ebcfc2bf61b15e11e8ce47174",
+          "size_bytes": 702
+        },
+        {
+          "path": "core/libs/prx/libSceVoiceQoS/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "40f3e890f72565818612246aa2c2bc8aa28011e5",
+          "sha256": "fad51869496bdce534e32021991192129b7cb0d1d316c8dbe7a1238b1a6268cd",
+          "size_bytes": 891
+        },
+        {
+          "path": "core/libs/prx/libSceVorbisDec/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "0da3f0a43e0605beb1dbae37c90663abb88d8cce",
+          "sha256": "016c08f76557ea28b438ee69025dfb259294234e8f52f2ff0888b86ec8cf8b05",
+          "size_bytes": 2969
+        },
+        {
+          "path": "core/libs/prx/libSceVrServiceDialog/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "56c0611c39158a4ef78044b4147cdac33fefedda",
+          "sha256": "735778b313a91332749d3df8b35acabdf19192020728cfabef0808a74ecebfb8",
+          "size_bytes": 781
+        },
+        {
+          "path": "core/libs/prx/libSceVrSetupDialog/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "1f0ea1700c1511df1247ab6cb3195b5c0520cf8e",
+          "sha256": "07878bcafba4834a5ae916b393d9c263b34ea5ac9502e076d133431e634c1272",
+          "size_bytes": 757
+        },
+        {
+          "path": "core/libs/prx/libSceVrTracker2/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "cccd8e8455ecda92548a0ecb3afb9f58a07fbdf1",
+          "sha256": "82a59ef0397f1f9f6e9c038ecebe4ed0a940c3ff81c275356deee904c4a22b44",
+          "size_bytes": 848
+        },
+        {
+          "path": "core/libs/prx/libSceWebBrowserDialog/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "641f60463e9e09ce78e35d4dd0b4d6d9071ebd3f",
+          "sha256": "b5328d5920a0cde85ff19510fea92e99007a3cd3cb77a09489cf5a4cd3a17c47",
+          "size_bytes": 1442
+        },
+        {
+          "path": "core/libs/prx/libSceZlib/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "4b216a85a410970e6fa0ac113b0dd0c8661c3bad",
+          "sha256": "8d9fc4888bacdb4bf9cdbe8ecc2a302caa8b3427ee7e09a47e6f514d25c175e8",
+          "size_bytes": 1014
+        },
+        {
+          "path": "core/libs/prx/libc/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "9a07b98acbcd1d6760ebc1a0f15f9696d710289b",
+          "sha256": "b3ba69273f1e3c04d8c1a610262e25f0b759e45747081953f205f0058e1180e2",
+          "size_bytes": 82674
+        },
+        {
+          "path": "core/libs/prx/libc/include/GuestArena.hpp",
+          "mode": "100644",
+          "git_blob": "49719e365b5d89a34940466270c45177eafecd17",
+          "sha256": "3ff7e0933d8f935ebf5648c8ac451f39d32a22101bae9558fe8a26c896330edb",
+          "size_bytes": 6386
+        },
+        {
+          "path": "core/libs/prx/libc/include/GuestWriteWatch.hpp",
+          "mode": "100644",
+          "git_blob": "96f09551c65d0bed78537f53ededc08282535509",
+          "sha256": "a85790a678bb197b42fa2581b6e74ae109e4da9209f4601cd84e23b7646a3a8a",
+          "size_bytes": 1599
+        },
+        {
+          "path": "core/libs/prx/libc/src/GuestArena.cpp",
+          "mode": "100644",
+          "git_blob": "65f574aded2c4dadb3676d5da63d21ccb31f147c",
+          "sha256": "4fcde27f16a8082c3318591c48265bdabb74614a3e501a6fa852154a77703f04",
+          "size_bytes": 29226
+        },
+        {
+          "path": "core/libs/prx/libc/src/GuestWriteWatch.cpp",
+          "mode": "100644",
+          "git_blob": "0d83d52ccb7247cb793618aad0beccf8da6868b0",
+          "sha256": "83bd54232072a8cc2d10c438b649e2bd0e100ddc25e140a7d43b6f7f179fb622",
+          "size_bytes": 32718
+        },
+        {
+          "path": "core/libs/prx/libc/src/specifics/windows/SehPersonalities.cpp",
+          "mode": "100644",
+          "git_blob": "cd4c85606315af62b88625c72edf70cd69272d1f",
+          "sha256": "62eea0353a67ac79a878d9b7e746afde8825d8964fd5dd8e537d8319e3a8be6c",
+          "size_bytes": 384
+        },
+        {
+          "path": "core/libs/prx/libkernel/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "27e89bc6414ffc750d11f2362f21d42d8ad307c7",
+          "sha256": "d713fb102d117c2595f9c76f5cc57fda610779f9ba3ca54f61896d18e7ae92ec",
+          "size_bytes": 150716
+        },
+        {
+          "path": "core/libs/prx/libkernel/DirectMemory/DirectMemory.cpp",
+          "mode": "100644",
+          "git_blob": "5c85fec058175a8eb31f5ac16929d34db5a01920",
+          "sha256": "f33f8ba326a3102e2a611eae8cad33cfd85d3e8d30da3e7e0e0ebbd4ccc3bbb4",
+          "size_bytes": 77698
+        },
+        {
+          "path": "core/libs/prx/libkernel/DirectMemory/DirectMemory.hpp",
+          "mode": "100644",
+          "git_blob": "604e85b34c2fbb03735deef7a8c9d60c6433536d",
+          "sha256": "c2dbbde6ac9986cc5aeaa37dc41d5aa5dd761370691bd906b7dbaa648f9ae738",
+          "size_bytes": 2910
+        },
+        {
+          "path": "core/libs/prx/libkernel/DirectMemory/Export.cpp",
+          "mode": "100644",
+          "git_blob": "cffd7e88daaadca70c43a9d3de56571c01c36ad6",
+          "sha256": "d5549a01299f7298e6f5816956a84625905c5c57f63cee8e2e68e349d579df2d",
+          "size_bytes": 37203
+        },
+        {
+          "path": "core/libs/prx/libkernel/DirectMemory/Jit.cpp",
+          "mode": "100644",
+          "git_blob": "60e266a543dd72e9ee402d05a1e47837295578ae",
+          "sha256": "a13a6139848f8216ada48ed58e6b5d45c4b8ba288fe3ac4101b685756de9702b",
+          "size_bytes": 8170
+        },
+        {
+          "path": "core/libs/prx/libkernel/DirectMemory/MemoryPool.cpp",
+          "mode": "100644",
+          "git_blob": "44a02c7f1257b216ab628cfcd46c371d8942ea12",
+          "sha256": "bfeea0a2b6f6d790a5845f58b2d94b24083cd386377eefc3d00664fb2d0b857e",
+          "size_bytes": 13210
+        },
+        {
+          "path": "core/libs/prx/libkernel/DirectMemory/MemoryPool.hpp",
+          "mode": "100644",
+          "git_blob": "5882f0c2e9a23f80704e547f1b1b1cfc5130de13",
+          "sha256": "08ba67a2bf9f2a026afd1fd316f3c700bec3b8ebc46ff72afbd1055222677fd4",
+          "size_bytes": 446
+        },
+        {
+          "path": "core/libs/prx/libkernel/DirectMemory/MemoryPoolExport.cpp",
+          "mode": "100644",
+          "git_blob": "d20fb3c3647c13f377a5683f7121767212c5863c",
+          "sha256": "d6c63cfc92222d0a33a859619b8f197d79e2584695a57006f64c51b0513a8c5e",
+          "size_bytes": 4601
+        },
+        {
+          "path": "core/libs/prx/libkernel/DirectMemory/PosixMemory.cpp",
+          "mode": "100644",
+          "git_blob": "81295e330c38bcf2fd897bb2e45c399948418c04",
+          "sha256": "3857b93821695c25f9516cb8a3d4a9e500803c1ae65f361a1d3af566801b787e",
+          "size_bytes": 17318
+        },
+        {
+          "path": "core/libs/prx/libkernel_sys/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "70a25df4cd5b181d6f9c9c2662939d9b83ffe070",
+          "sha256": "30c8f4a21aa6a7d79b58dda934755d4106f1676e8c4055553e11a7e9ec11749a",
+          "size_bytes": 270
+        },
+        {
+          "path": "core/libs/prx/ulobjmgr/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "47c70a7c5c7fb5dc8398f5d45e0f86c54996d53f",
+          "sha256": "c3aa00a0cd95a022829586ed4344499ad24a6009812f250d0188674db05bcb92",
+          "size_bytes": 655
+        },
+        {
+          "path": "core/libs/tests/GuestIcuSearch.cpp",
+          "mode": "100644",
+          "git_blob": "1aeb4f35a289f36ea85c334dbb41c22d2cfa6716",
+          "sha256": "abf562ba3ebd137482e44144a014cc3eb18871702e7cf59640c092905e6afed5",
+          "size_bytes": 10511
+        },
+        {
+          "path": "core/libs/tests/GuestIcuVersion.cpp",
+          "mode": "100644",
+          "git_blob": "b464003cac1df81701b9e9191575c2a917bd0a28",
+          "sha256": "1154fd21a020fff5c425991b9800bd6304abf4568aaeca5e4c047551571ce3eb",
+          "size_bytes": 7193
+        },
+        {
+          "path": "core/libs/tests/LibcFloatingPointContraction.cmake",
+          "mode": "100644",
+          "git_blob": "132956d6557da2e716aa2131a09cb9c2b3360fb6",
+          "sha256": "f64b6003fcd82f91cb44aec8ac8e5c3270eb1eef34860f85932b806d1aaa48d0",
+          "size_bytes": 1251
+        },
+        {
+          "path": "core/libs/tests/ThreadLocalDestructors.cmake",
+          "mode": "100644",
+          "git_blob": "d58f04de55be2056479e11eccc233f1cdf78af92",
+          "sha256": "3a266d5c716fa72d8741df4a4d1b64a85d59dfa45f0d18635ebd61ce3df411a7",
+          "size_bytes": 1769
+        },
+        {
+          "path": "core/libs/tests/guest_arena/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "e9a10f6a4c0660f07176381db668cc735071da92",
+          "sha256": "c6095140f002598364f9f2113be4e8bc16a9ea8326415b2ec4ac6dd2b0be01d8",
+          "size_bytes": 929
+        },
+        {
+          "path": "core/libs/tests/register_context/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "eedbc80e3f43366804cf08b0c25165abbf3519e1",
+          "sha256": "57fb4c4c2c2c768219f4ea20fe030837dde01bcb1d2ad8a61236e75871fbf2db",
+          "size_bytes": 889
+        },
+        {
+          "path": "core/libs/tests/shared_memory/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "f9e85f8dec18f4d482c607abac3e5385c223fc58",
+          "sha256": "de7004668deaf2c995d6d20d74dd05cde1b46dadc55690f1dee289dfe519ff34",
+          "size_bytes": 858
+        },
+        {
+          "path": "core/libs/tests/test_public_headers.py",
+          "mode": "100644",
+          "git_blob": "25116597656f4b83bd0fae1afbe65edbb61b3d5f",
+          "sha256": "d1ddda6ec684af25a9656828db63b2fe78eea0ee3bfe2a15d48027369f6c6242",
+          "size_bytes": 10702
+        },
+        {
+          "path": "core/libs/tests/write_watch/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "ba692f336cfca8d6e73dcb5e0a2693fda70aec42",
+          "sha256": "c7eda995a15b6a3ab48a5c2f867b667be5d2471a379d03c9fd910b0356f71a57",
+          "size_bytes": 929
+        },
+        {
+          "path": "core/relinker/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "0ef721495001ae13f68db10797d0f65770dd9118",
+          "sha256": "d52de420e29ff2e0aff2b52b5b7b0c7a0280898c3e0b7b5bb1a2b4b257636d9e",
+          "size_bytes": 69114
+        },
+        {
+          "path": "core/relinker/revision.cmake",
+          "mode": "100644",
+          "git_blob": "0abbecf6130779754c09984e68db7fcc98534922",
+          "sha256": "3520f8b052fc1939750e0611975fa4a33adfaf08a58bdef439dc1b96b42cdb0d",
+          "size_bytes": 545
+        },
+        {
+          "path": "core/relinker/wasm/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "b92335d011e5e3b6801f77a3e313686dfe83b1c4",
+          "sha256": "7516d88b72759820646e933314105bd4669504d897c2c56f09579f65a47f2213",
+          "size_bytes": 845
+        },
+        {
+          "path": "core/shader/recompiler/CMakeLists.txt",
+          "mode": "100644",
+          "git_blob": "4b3bf1c4adb31b6173dafb35c0f2f6c4443f6caf",
+          "sha256": "964b68ad0dce47aeb6c13b9e9165c2d5fa9bfee7f2681035c60430c5c8cebb94",
+          "size_bytes": 22568
+        },
+        {
+          "path": "core/shader/recompiler/PatchSpirvTools.cmake",
+          "mode": "100644",
+          "git_blob": "4acc117b3bd84dc2ded8837ae9d0558b22b1c9b0",
+          "sha256": "bd12b9d9559298ecd0eda07e39f64fd0c5f362447e9b2b500c1e829395cac091",
+          "size_bytes": 7814
+        },
+        {
+          "path": "core/shader/recompiler/ShaderCacheVersion.cmake",
+          "mode": "100644",
+          "git_blob": "b3cbea2c75caa6254fb4d9679b9a720b36e65245",
+          "sha256": "70a4153543e9d26949a8207a52d4a0019ebe535a153c08d4a765d991b449fd40",
+          "size_bytes": 7195
+        },
+        {
+          "path": "docs/dev/BUILD.md",
+          "mode": "100644",
+          "git_blob": "1154ea812c3dde2e430fb985b95b68a6ccb21dc3",
+          "sha256": "d6c261a8c5262503eea62c424919839ddf4a8bc908859088c8a4c3b70d43af0f",
+          "size_bytes": 64899
+        },
+        {
+          "path": "docs/dev/debt/libSceIcu.md",
+          "mode": "100644",
+          "git_blob": "fad71d30a15a10f4c8c16705ae210fd03578f5c3",
+          "sha256": "7ec34c0de96889317211321f157ba8aa5d08e2a2fb84e83eaabbe8135997b498",
+          "size_bytes": 4181
+        },
+        {
+          "path": "tools/nid_names.py",
+          "mode": "100644",
+          "git_blob": "920876f1b3f116b59a5afb51539dd5743dc37673",
+          "sha256": "00db4e54a2b8b5d9e700782bedf327ae5132be104c5c93297c1bb7b51c7f7067",
+          "size_bytes": 11311
+        }
+      ],
+      "direct_gitlinks": [
+        {
+          "path": "3rdparty/LibAtrac9",
+          "commit": "946e05a9212976626a9f5e52f29c0a7202871f29",
+          "declared_url": "https://github.com/shadps4-emu/ext-LibAtrac9.git"
+        },
+        {
+          "path": "3rdparty/SDL2",
+          "commit": "4b69833bc54abf3dd3288d4aa7afbba527775e5b",
+          "declared_url": "https://github.com/libsdl-org/SDL.git"
+        },
+        {
+          "path": "3rdparty/SPIRV-Headers",
+          "commit": "b824a462d4256d720bebb40e78b9eb8f78bbb305",
+          "declared_url": "https://github.com/KhronosGroup/SPIRV-Headers.git"
+        },
+        {
+          "path": "3rdparty/SPIRV-Tools",
+          "commit": "262bdab48146c937467f826699a40da0fdfc0f1a",
+          "declared_url": "https://github.com/KhronosGroup/SPIRV-Tools.git"
+        },
+        {
+          "path": "3rdparty/Vulkan-Headers",
+          "commit": "2fa203425eb4af9dfc6b03f97ef72b0b5bcb8350",
+          "declared_url": "https://github.com/KhronosGroup/Vulkan-Headers.git"
+        },
+        {
+          "path": "3rdparty/VulkanMemoryAllocator",
+          "commit": "a1d434708c217b2a6c7b365f1fe41fa03a562e59",
+          "declared_url": "https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git"
+        },
+        {
+          "path": "3rdparty/ZArchive",
+          "commit": "965b66c8d67b6b7e30fd63b3b75aa91a99ff303b",
+          "declared_url": "https://github.com/Exzap/ZArchive.git"
+        },
+        {
+          "path": "3rdparty/ffmpeg-core",
+          "commit": "9ac4cfd195f192ed8b08566f49c28dbb48d08341",
+          "declared_url": "https://github.com/KytyPS5/ext-ffmpeg-core.git"
+        },
+        {
+          "path": "3rdparty/freetype",
+          "commit": "42608f77f20749dd6ddc9e0536788eaad70ea4b5",
+          "declared_url": "https://github.com/freetype/freetype.git"
+        },
+        {
+          "path": "3rdparty/glslang",
+          "commit": "ba1640446f3826a518721d1f083f3a8cca1120c3",
+          "declared_url": "https://github.com/KhronosGroup/glslang.git"
+        },
+        {
+          "path": "3rdparty/jxrlib",
+          "commit": "f7521879862b9085318e814c6157490dd9dbbdb4",
+          "declared_url": "https://github.com/4creators/jxrlib.git"
+        },
+        {
+          "path": "3rdparty/libjpeg-turbo",
+          "commit": "c85e6b905bf237038faa936dab160ebfc5da0344",
+          "declared_url": "https://github.com/libjpeg-turbo/libjpeg-turbo.git"
+        },
+        {
+          "path": "3rdparty/libusb-cmake",
+          "commit": "bea6567b63796ab27c1c33257d230284fb2d8316",
+          "declared_url": "https://github.com/libusb/libusb-cmake.git"
+        },
+        {
+          "path": "3rdparty/mbedtls",
+          "commit": "068ff080b369adfac81509f9b57b2afabaf82dc5",
+          "declared_url": "https://github.com/Mbed-TLS/mbedtls.git"
+        },
+        {
+          "path": "3rdparty/mimalloc",
+          "commit": "f8401befa675adb13b98decababd7fdc59572477",
+          "declared_url": "https://github.com/microsoft/mimalloc.git"
+        },
+        {
+          "path": "3rdparty/nghttp2",
+          "commit": "85e300c79fb6dbcfa9c1013215c8710c1c2cd3d2",
+          "declared_url": "https://github.com/nghttp2/nghttp2.git"
+        },
+        {
+          "path": "3rdparty/ogg",
+          "commit": "be05b13e98b048f0b5a0f5fa8ce514d56db5f822",
+          "declared_url": "https://github.com/xiph/ogg.git"
+        },
+        {
+          "path": "3rdparty/opus",
+          "commit": "22244de5a79bd1d6d623c32e72bf1954b56235be",
+          "declared_url": "https://github.com/xiph/opus.git"
+        },
+        {
+          "path": "3rdparty/stb",
+          "commit": "2c980bb59875b0d32144a71867fbdebb2f77cd20",
+          "declared_url": "https://github.com/nothings/stb.git"
+        },
+        {
+          "path": "3rdparty/tracy",
+          "commit": "30997d5ca6bb632cc10807a1da8a6d3de0aeeb3c",
+          "declared_url": "https://github.com/wolfpld/tracy.git"
+        },
+        {
+          "path": "3rdparty/vgmstream",
+          "commit": "7c520e8f9b078dfde2f84f1b5bcbad0c6c415806",
+          "declared_url": "https://github.com/vgmstream/vgmstream.git"
+        },
+        {
+          "path": "3rdparty/vorbis",
+          "commit": "c2aa86b05e981c96bf381fc6aa11cdd03eccc2fb",
+          "declared_url": "https://github.com/xiph/vorbis.git"
+        },
+        {
+          "path": "3rdparty/zstd",
+          "commit": "f8745da6ff1ad1e7bab384bd1f9d742439278e99",
+          "declared_url": "https://github.com/facebook/zstd.git"
+        }
+      ]
+    }
+  },
+  "WinLibs_archive_sha256": "cb2fbad6162540cdf5e1facdce08d4dac359e8cf64f7f696a99274291763b815",
+  "source_verification": "Exact root Git head/tree and directgitlinks; recursively resolve expectedchildcommits from parentGit trees and verify everycheckoutblob/mode/EOL/symlink using V4 inventory. Windowsfuturecheckout mustcontainallrecursiveobjects; localpreparationdoesnotclaimchildsourcequalification.",
+  "scope_limits": [
+    "No maintainerCI/review/dependencyfulfillment/fullproject or existingoldruntimecredit.",
+    "Actualproviderbinding inferredfromsources/normalstaging/absoluteCTestargv/PEimports/hash-qualifiedsearchpaths; no directmoduleloadtrace."
+  ],
+  "fresh_build": "No artifact/ccache restoration, existingbuilddirectory rejected; compilerdownload archivehash independentlypinned from priorobservedofficialpackage."
+}
