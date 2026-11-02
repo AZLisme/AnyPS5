@@ -1,0 +1,144 @@
+name: ICU 10963 frozen Windows validation
+
+on:
+  push:
+    branches: [codex/icu-10963-windows-568c-0278]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: icu-10963-windows-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  MAIN_COMMIT: 0278ca983148dbb9b8b54a267b2aeab0ce8aff37
+  PR_COMMIT: 568c0071c4431b53f351d78769b90537ba5c522c
+  WINLIBS_RELEASE: 15.2.0posix-14.0.0-ucrt-r7
+  WINLIBS_ZIP: winlibs-x86_64-posix-seh-gcc-15.2.0-mingw-w64ucrt-14.0.0-r7.zip
+  WINLIBS_SHA256: cb2fbad6162540cdf5e1facdce08d4dac359e8cf64f7f696a99274291763b815
+  PYTHONDONTWRITEBYTECODE: '1'
+
+jobs:
+  windows:
+    if: github.repository == 'AZLisme/AnyPS5' && github.repository_id == '1430544501' && github.event_name == 'push'
+    runs-on: windows-latest
+    timeout-minutes: 90
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Keep source line endings deterministic
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: boykopovar/AnyPS5
+          ref: 0278ca983148dbb9b8b54a267b2aeab0ce8aff37
+          path: product
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Merge only the exact published head into frozen main
+        working-directory: product
+        run: |
+          set -euo pipefail
+          mkdir -p ../evidence
+          test "$(git rev-parse HEAD)" = "$MAIN_COMMIT"
+          git fetch --no-tags https://github.com/AZLisme/AnyPS5.git "$PR_COMMIT"
+          test "$(git rev-parse FETCH_HEAD)" = "$PR_COMMIT"
+          git -c user.name=ci -c user.email=ci@localhost merge --no-ff --no-edit -m 'ci(libSceIcu): validate frozen main with published comparisons' "$PR_COMMIT"
+          test "$(git show -s --format=%P HEAD)" = "$MAIN_COMMIT $PR_COMMIT"
+          git diff --exit-code "$PR_COMMIT" HEAD -- core/libs/prx/libSceIcu core/libs/tests/GuestIcuComparisons.cpp core/libs/tests/GuestIcuTokenize.cpp
+          git log -1 --format=fuller > ../evidence/source-inputs.txt
+          git diff --stat "$MAIN_COMMIT" HEAD >> ../evidence/source-inputs.txt
+          git submodule update --init --recursive --depth 1 --jobs 8
+          git submodule status --recursive >> ../evidence/source-inputs.txt
+          git diff --exit-code
+      - name: Use the Git for Windows CA bundle
+        run: |
+          set -euo pipefail
+          for prefix in ucrt64 mingw64; do
+            bundle="C:/Program Files/Git/$prefix/etc/ssl/certs/ca-bundle.crt"
+            if [ -f "$bundle" ]; then echo "SSL_CERT_FILE=$bundle" >> "$GITHUB_ENV"; exit 0; fi
+          done
+          exit 1
+      - name: Install the existing fixed WinLibs toolchain
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/$WINLIBS_ZIP"
+          curl -sSfL --retry 3 -o "$archive" "https://github.com/brechtsanders/winlibs_mingw/releases/download/$WINLIBS_RELEASE/$WINLIBS_ZIP"
+          python -c 'import hashlib,os,pathlib; p=pathlib.Path(os.environ["RUNNER_TEMP"])/os.environ["WINLIBS_ZIP"]; assert hashlib.sha256(p.read_bytes()).hexdigest()==os.environ["WINLIBS_SHA256"]'
+          7z x "$archive" -oC:/winlibs > /dev/null
+          echo 'C:\winlibs\mingw64\bin' >> "$GITHUB_PATH"
+      - name: Record native tools and normal runtime paths
+        run: |
+          set -euo pipefail
+          gcc --version | tee evidence/toolchain.txt
+          g++ -dumpmachine | tee -a evidence/toolchain.txt
+          cmake --version | tee -a evidence/toolchain.txt
+          ninja --version | tee -a evidence/toolchain.txt
+          python --version | tee -a evidence/toolchain.txt
+          where.exe gcc g++ cmake ninja python | tee -a evidence/toolchain.txt
+          printf '%s\n' "$PATH" >> evidence/toolchain.txt
+      - name: Configure the normal root Release build
+        shell: pwsh
+        run: |
+          cmake -S product -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON -DANYPS5_RELINKER_ONLY=OFF -DANYPS5_USE_SYSTEM_DEPS=OFF -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER_LAUNCHER= -DCMAKE_CXX_COMPILER_LAUNCHER= -DCMAKE_EXPORT_COMPILE_COMMANDS=ON 2>&1 | Tee-Object evidence/configure.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python product/tools/check_test_registration.py build 2>&1 | Tee-Object evidence/registration.log
+          exit $LASTEXITCODE
+      - name: Build normal providers and the ten ICU fixtures
+        shell: pwsh
+        run: |
+          cmake --build build --parallel 2 --target libc libkernel libSceIcu guest_icu_utf8_tests guest_icu_cstring_tests guest_icu_converter_callbacks_tests guest_icu_version_tests guest_icu_space_tests guest_icu_unescape_tests guest_icu_compare_iter_tests guest_icu_resource_tests guest_icu_tokenize_tests guest_icu_comparison_tests 2>&1 | Tee-Object evidence/build.log
+          exit $LASTEXITCODE
+      - name: Run the ten normal ICU behavior tests
+        shell: pwsh
+        run: |
+          ctest --test-dir build -R '^guest_icu_' --no-tests=error -V --output-on-failure --output-log icu.log --output-junit icu.xml --parallel 1 2>&1 | Tee-Object evidence/icu-console.log
+          exit $LASTEXITCODE
+      - name: Run the 65 normal public-header checks
+        shell: pwsh
+        run: |
+          ctest --test-dir build -R '^public_headers($|_)' --no-tests=error --output-on-failure --output-log headers.log --output-junit headers.xml --parallel 1 2>&1 | Tee-Object evidence/headers-console.log
+          exit $LASTEXITCODE
+      - name: Require exact executed test names and no skips
+        run: |
+          python - <<'PY'
+          import pathlib
+          import xml.etree.ElementTree as ET
+          expected = {'guest_icu_utf8', 'guest_icu_cstring', 'guest_icu_converter_callbacks', 'guest_icu_version', 'guest_icu_space', 'guest_icu_unescape', 'guest_icu_compare_iter', 'guest_icu_resource', 'guest_icu_tokenize', 'guest_icu_comparisons'}
+          headers = {'public_headers'} | {f'public_headers_compile_{i}' for i in range(64)}
+          for name, names in [('icu', expected), ('headers', headers)]:
+              cases = list(ET.parse(pathlib.Path('build') / f'{name}.xml').getroot().iter('testcase'))
+              if len(cases) != len(names) or {c.get('name') for c in cases} != names:
+                  raise SystemExit(f'{name}: wrong test set')
+              for case in cases:
+                  if case.get('status') != 'run' or any(case.find(k) is not None for k in ('failure', 'error', 'skipped')):
+                      raise SystemExit(f'{name}: failed or skipped {case.get("name")}')
+          print('10 ICU behavior tests and 65 header checks passed without skips')
+          PY
+      - name: Retain normal provider import bindings and clean source
+        run: |
+          set -euo pipefail
+          objdump -p build/tests/guest_icu_comparison_tests.exe > evidence/comparison-imports.txt
+          objdump -p build/tests/guest_icu_tokenize_tests.exe > evidence/tokenize-imports.txt
+          git -C product diff --exit-code
+          git -C product log -1 --format=fuller >> evidence/source-inputs.txt
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
+        with:
+          name: icu-10963-windows-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            evidence
+            build/icu.log
+            build/icu.xml
+            build/headers.log
+            build/headers.xml
+            build/Testing/Temporary/LastTest.log
+            build/CMakeCache.txt
+            build/compile_commands.json
+            build/core/libs/libs/unpatched/*.prx
+            build/tests/guest_icu*.exe
+            build/tests/*.dll
+          if-no-files-found: error
+          retention-days: 14
