@@ -1,0 +1,211 @@
+name: EVP 10960 candidate Windows SSL validation
+
+on:
+  push:
+    branches: [codex/evp10960-windows-4a33-d1ae]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: evp-10960-windows-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  MAIN_COMMIT: d1ae628bc2f62459cce1e9872ba5632c938c71f2
+  PRODUCT_COMMIT: 4a33c0bf29c087d7c58b4dd80a2ff0fe8547e997
+  PRODUCT_TREE: b0eee02496456b7cfd232c442698e6031e1d7882
+  TOPIC_PARENT: a5240ab203dd353b89850f34ad71d3eafb9f5acc
+  WINLIBS_RELEASE: 15.2.0posix-14.0.0-ucrt-r7
+  WINLIBS_ZIP: winlibs-x86_64-posix-seh-gcc-15.2.0-mingw-w64ucrt-14.0.0-r7.zip
+  WINLIBS_SHA256: cb2fbad6162540cdf5e1facdce08d4dac359e8cf64f7f696a99274291763b815
+  PYTHONDONTWRITEBYTECODE: '1'
+  PYTHONUTF8: '1'
+
+jobs:
+  windows:
+    if: github.repository == 'AZLisme/AnyPS5' && github.repository_id == '1430544501' && github.event_name == 'push' && github.ref == 'refs/heads/codex/evp10960-windows-4a33-d1ae'
+    runs-on: windows-latest
+    timeout-minutes: 90
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Keep source line endings deterministic
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: boykopovar/AnyPS5
+          ref: d1ae628bc2f62459cce1e9872ba5632c938c71f2
+          path: product
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Advance frozen main to the exact candidate, independent of the PR ref
+        working-directory: product
+        run: |
+          set -euo pipefail
+          mkdir -p ../evidence
+          test "$(git rev-parse HEAD)" = "$MAIN_COMMIT"
+          git fetch --no-tags https://github.com/AZLisme/AnyPS5.git "$PRODUCT_COMMIT"
+          test "$(git rev-parse FETCH_HEAD)" = "$PRODUCT_COMMIT"
+          git merge --ff-only "$PRODUCT_COMMIT"
+          test "$(git rev-parse HEAD)" = "$PRODUCT_COMMIT"
+          test "$(git rev-parse HEAD^{tree})" = "$PRODUCT_TREE"
+          test "$(git show -s --format=%P HEAD)" = "$TOPIC_PARENT $MAIN_COMMIT"
+          git log -1 --format=fuller > ../evidence/source-inputs.txt
+          git diff --stat "$MAIN_COMMIT" HEAD >> ../evidence/source-inputs.txt
+          git submodule update --init --recursive --depth 1 --jobs 8
+          git submodule status --recursive >> ../evidence/source-inputs.txt
+          git diff --exit-code
+      - name: Use the Git for Windows CA bundle
+        run: |
+          set -euo pipefail
+          for prefix in ucrt64 mingw64; do
+            bundle="C:/Program Files/Git/$prefix/etc/ssl/certs/ca-bundle.crt"
+            if [ -f "$bundle" ]; then echo "SSL_CERT_FILE=$bundle" >> "$GITHUB_ENV"; exit 0; fi
+          done
+          exit 1
+      - name: Install the existing fixed WinLibs toolchain
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/$WINLIBS_ZIP"
+          curl -sSfL --retry 3 -o "$archive" "https://github.com/brechtsanders/winlibs_mingw/releases/download/$WINLIBS_RELEASE/$WINLIBS_ZIP"
+          python -c 'import hashlib,os,pathlib; p=pathlib.Path(os.environ["RUNNER_TEMP"])/os.environ["WINLIBS_ZIP"]; assert hashlib.sha256(p.read_bytes()).hexdigest()==os.environ["WINLIBS_SHA256"]'
+          7z x "$archive" -oC:/winlibs > /dev/null
+          echo 'C:\winlibs\mingw64\bin' >> "$GITHUB_PATH"
+      - name: Record the native tools and runtime search path
+        run: |
+          set -euo pipefail
+          gcc --version | tee evidence/toolchain.txt
+          g++ -dumpmachine | tee -a evidence/toolchain.txt
+          cmake --version | tee -a evidence/toolchain.txt
+          ninja --version | tee -a evidence/toolchain.txt
+          python --version | tee -a evidence/toolchain.txt
+          where.exe gcc g++ cmake ninja python | tee -a evidence/toolchain.txt
+          printf '%s\n' "$PATH" >> evidence/toolchain.txt
+      - name: Configure the unchanged normal root Release build
+        shell: pwsh
+        run: |
+          cmake -S product -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON -DANYPS5_RELINKER_ONLY=OFF -DANYPS5_USE_SYSTEM_DEPS=OFF -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER_LAUNCHER= -DCMAKE_CXX_COMPILER_LAUNCHER= -DCMAKE_EXPORT_COMPILE_COMMANDS=ON 2>&1 | Tee-Object evidence/configure.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python product/tools/check_test_registration.py build 2>&1 | Tee-Object evidence/registration.log
+          exit $LASTEXITCODE
+      - name: Require every original Windows SSL registration and derive original targets
+        run: |
+          set -euo pipefail
+          cat > evidence/selection.py <<'PY'
+          import json
+          from pathlib import Path
+          import re
+          import subprocess
+          import sys
+          import xml.etree.ElementTree as ET
+
+          legacy = set('''guest_libressl_x509_errors guest_libressl_digest guest_libressl_asn1 guest_libressl_asn1_allocator
+          guest_libressl_ex_data guest_libressl_des guest_libressl_runtime guest_libressl_aes guest_libressl_error
+          guest_libressl_ocsp guest_libressl_stack guest_libressl_general_name guest_libressl_ui guest_libressl_rsa
+          guest_libressl_x509_store_context guest_libressl_pkey_type guest_libressl_evp_cipher_ctx guest_libressl_cipher
+          guest_libressl_alert guest_libressl_version guest_libressl_crypto_locks guest_libressl_object_text
+          guest_libressl_object_allocation guest_libressl_x509_store guest_libressl_x509_store_allocator
+          guest_libressl_x509_verify_param guest_libressl_x509_verify_param_allocator guest_libressl_x509_lookup
+          guest_libressl_x509_lookup_allocator guest_libressl_x509_extension guest_libressl_evp guest_libressl3_time
+          guest_libressl3_pkey_getters guest_crypto_memcmp guest_libressl3_digest guest_libressl3_digest_context
+          guest_libressl3_asn1 guest_libressl3_x509_verify_param guest_libressl3_stack guest_libressl3_cipher
+          guest_libressl3_key_reference guest_libressl3_evp guest_libressl3_version guest_libressl_protocol
+          guest_libressl_protocol_nid guest_libressl_errors guest_libressl_free_strings guest_libressl_free_strings_first'''.split())
+          sce = set('''guest_ssl guest_ssl_load guest_ssl_transport_kernel guest_ssl_transport_net
+          guest_ssl_system_roots_system guest_ssl_system_roots_context guest_ssl_system_roots_empty
+          guest_ssl_system_roots_blank guest_ssl_ps5_readers guest_ssl_context_lifetime'''.split())
+          runtime = legacy | sce | {'patched_libraries'}
+          headers = {'public_headers'} | {f'public_headers_compile_{i}' for i in range(64)}
+          if (len(legacy), len(sce), len(runtime), len(headers)) != (48, 10, 59, 65):
+              raise SystemExit('Invalid frozen test sets')
+          pattern = r'^guest_(libressl|crypto_|ssl($|_))|^patched_libraries$|^public_headers($|_)'
+          document = json.loads(subprocess.check_output(['ctest', '--test-dir', 'build', '--show-only=json-v1', '-R', pattern], text=True, encoding='utf-8-sig'))
+          tests = document['tests']
+          if len(tests) != 124 or {t['name'] for t in tests} != runtime | headers:
+              raise SystemExit('Windows registration differs: ' + repr(sorted({t['name'] for t in tests} ^ (runtime | headers))))
+          paths = [Path('product/core/libs/CMakeLists.txt')]
+          for lib in ('libSceLibreSsl', 'libSceLibreSsl3', 'libSceSsl'):
+              folder = Path('product/core/libs/prx') / lib
+              paths.extend([folder / 'CMakeLists.txt', *folder.glob('*.cmake')])
+          mapping = {}
+          for path in paths:
+              mapping.update(re.findall(r'add_test\(\s*NAME\s+([^\s)]+)\s+COMMAND\s+([^\s)]+)', path.read_text(encoding='utf-8')))
+          for table in ('kernel', 'net'):
+              mapping['guest_ssl_transport_' + table] = 'guest_ssl_transport_tests'
+          for mode in ('system', 'context', 'empty', 'blank'):
+              mapping['guest_ssl_system_roots_' + mode] = 'guest_ssl_system_roots_tests'
+          targets = sorted({mapping[name] for name in runtime})
+          if len(targets) != 48 or not all(name.endswith('_tests') for name in targets):
+              raise SystemExit('Missing original fixture target')
+          if sys.argv[1] == 'plan':
+              Path('evidence/targets.txt').write_text('\n'.join(['libs', 'libc', 'libkernel', 'libSceLibreSsl', 'libSceLibreSsl3', 'libSceSsl', *targets]) + '\n', encoding='utf-8')
+          else:
+              for test in tests:
+                  command = test.get('command', [])
+                  if not command or not Path(command[0]).is_file():
+                      raise SystemExit('Unbuilt test executable: ' + test['name'])
+                  if test['name'] in runtime and Path(command[0]).stem != mapping[test['name']]:
+                      raise SystemExit('Unexpected executable: ' + test['name'])
+              if sys.argv[1] == 'verify':
+                  for filename, expected in [('ssl', runtime), ('headers', headers)]:
+                      cases = list(ET.parse(Path('build') / (filename + '.xml')).getroot().iter('testcase'))
+                      if len(cases) != len(expected) or {c.get('name') for c in cases} != expected:
+                          raise SystemExit(filename + ': incomplete or duplicate test set')
+                      for case in cases:
+                          if case.get('status') != 'run' or any(case.find(k) is not None for k in ('failure', 'error', 'skipped')):
+                              raise SystemExit(filename + ': failed/skipped ' + str(case.get('name')))
+          Path('evidence/ctest-' + sys.argv[1] + '.json').write_text(json.dumps(document, indent=2) + '\n', encoding='utf-8')
+          print('48 LibreSSL/SSL3/crypto +10 libSceSsl +patched_libraries;65 headers; Linux-only mixed fixture excluded')
+          PY
+          python evidence/selection.py plan
+      - name: Build all original targets and their normal full-libs dependency
+        shell: pwsh
+        run: |
+          $targets = Get-Content evidence/targets.txt
+          cmake --build build --parallel 2 --target @targets 2>&1 | Tee-Object evidence/build.log
+          exit $LASTEXITCODE
+      - name: Require actual existing executables for every selected test
+        run: python evidence/selection.py built
+      - name: Run all 59 original Windows SSL and patched-library tests
+        shell: pwsh
+        run: |
+          ctest --test-dir build -R '^guest_(libressl|crypto_|ssl($|_))|^patched_libraries$' --no-tests=error -V --output-on-failure --output-log ssl.log --output-junit ssl.xml --parallel 1 2>&1 | Tee-Object evidence/ssl-console.log
+          exit $LASTEXITCODE
+      - name: Run all 65 original public-header checks
+        shell: pwsh
+        run: |
+          ctest --test-dir build -R '^public_headers($|_)' --no-tests=error --output-on-failure --output-log headers.log --output-junit headers.xml --parallel 1 2>&1 | Tee-Object evidence/headers-console.log
+          exit $LASTEXITCODE
+      - name: Require exact JSON and JUnit scope without failures or skips
+        run: python evidence/selection.py verify
+      - name: Record normal provider bindings and unchanged candidate source
+        run: |
+          set -euo pipefail
+          objdump -p build/tests/guest_libressl3_evp_tests.exe > evidence/evp-imports.txt
+          objdump -p build/core/libs/libs/unpatched/libSceLibreSsl3.prx > evidence/ssl3-provider.txt
+          test "$(git -C product rev-parse HEAD)" = "$PRODUCT_COMMIT"
+          test "$(git -C product rev-parse HEAD^{tree})" = "$PRODUCT_TREE"
+          git -C product diff --exit-code
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
+        with:
+          name: evp-10960-candidate-windows-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            evidence
+            build/ssl.log
+            build/ssl.xml
+            build/headers.log
+            build/headers.xml
+            build/CMakeCache.txt
+            build/compile_commands.json
+            build/core/libs/libs/unpatched/libSceLibreSsl.prx
+            build/core/libs/libs/unpatched/libSceLibreSsl3.prx
+            build/core/libs/libs/unpatched/libSceSsl.prx
+            build/core/libs/libs/unpatched/libc.prx
+            build/core/libs/libs/libSceLibreSsl.prx
+            build/core/libs/libs/libSceLibreSsl3.prx
+            build/tests/guest_libressl3_evp_tests.exe
+          if-no-files-found: error
+          retention-days: 14
