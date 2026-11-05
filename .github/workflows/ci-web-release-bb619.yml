@@ -1,0 +1,75 @@
+name: Frozen Windows web release diagnostic
+
+on:
+  push:
+    branches: [codex/ci-web-release-bb619-20261105]
+
+permissions:
+  contents: read
+
+jobs:
+  web-release:
+    if: github.repository == 'AZLisme/AnyPS5' && github.ref == 'refs/heads/codex/ci-web-release-bb619-20261105'
+    runs-on: windows-latest
+    timeout-minutes: 10
+    env:
+      SOURCE_SHA: bb619a8abbc5ded501c4f368c61d3616e493922f
+      SOURCE_TREE: 3a7f34adce8a5583c317d1cda59e9dde7cd0feae
+      MAIN_SHA: 1e24993fa3a7da25e8fc27152af654687ba64552
+      CONFIG_SHA: ${{ github.sha }}
+      WINLIBS_RELEASE: 15.2.0posix-14.0.0-ucrt-r7
+      WINLIBS_ZIP: winlibs-x86_64-posix-seh-gcc-15.2.0-mingw-w64ucrt-14.0.0-r7.zip
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: bb619a8abbc5ded501c4f368c61d3616e493922f
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify frozen product source
+        run: |
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          test "$(git rev-parse HEAD^{tree})" = "$SOURCE_TREE"
+          test "$(git rev-parse HEAD^2)" = "$MAIN_SHA"
+          git merge-base --is-ancestor "$MAIN_SHA" HEAD
+          git diff --exit-code
+          git status --porcelain
+          git show -s --format='source=%H tree=%T parents=%P'
+          printf 'workflow=%s\n' "$CONFIG_SHA"
+          python --version
+      - uses: actions/cache@v6
+        id: toolchain
+        with:
+          path: C:\winlibs
+          key: ${{ env.WINLIBS_ZIP }}
+      - if: steps.toolchain.outputs.cache-hit != 'true'
+        run: |
+          curl -sSfL -o "$RUNNER_TEMP/winlibs.zip" "https://github.com/brechtsanders/winlibs_mingw/releases/download/$WINLIBS_RELEASE/$WINLIBS_ZIP"
+          7z x "$RUNNER_TEMP/winlibs.zip" -oC:/winlibs > /dev/null
+      - run: echo 'C:\winlibs\mingw64\bin' >> "$GITHUB_PATH"
+      - name: Configure original relinker tests
+        run: cmake -S . -B build-relinker -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=g++ -DANYPS5_RELINKER_ONLY=ON -DBUILD_TESTING=ON -DCMAKE_OSX_ARCHITECTURES=
+      - name: Verify original test command and timeout
+        run: |
+          ctest --test-dir build-relinker --show-only=json-v1 -R '^web_release$' > "$RUNNER_TEMP/web-release-registration.json"
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          data = json.loads((Path(os.environ['RUNNER_TEMP']) / 'web-release-registration.json').read_text())
+          assert len(data['tests']) == 1, data
+          test = data['tests'][0]
+          assert test['name'] == 'web_release', test
+          assert len(test['command']) == 2, test
+          assert Path(test['command'][1]).resolve() == Path('tools/tests/test_web_release.py').resolve(), test
+          properties = {item['name']: item['value'] for item in test['properties']}
+          assert properties['TIMEOUT'] == 20, test
+          print(json.dumps(test, indent=2))
+          PY
+      - name: Run original web release CTest
+        id: original-test
+        run: ctest --test-dir build-relinker --output-on-failure --timeout 120 -R '^web_release$' --no-tests=error -V
+      - name: Diagnose individual unittest cases after failure
+        if: failure() && steps.original-test.outcome == 'failure'
+        run: python -m unittest discover -s tools/tests -p test_web_release.py -v
