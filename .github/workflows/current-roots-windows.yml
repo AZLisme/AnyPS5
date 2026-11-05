@@ -1,0 +1,207 @@
+name: Current ICU and SSL3 Windows validation
+
+on:
+  push:
+    branches: [codex/roots-windows-20261105]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: current-roots-windows-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  MAIN_COMMIT: 1e24993fa3a7da25e8fc27152af654687ba64552
+  WINLIBS_RELEASE: 15.2.0posix-14.0.0-ucrt-r7
+  WINLIBS_ZIP: winlibs-x86_64-posix-seh-gcc-15.2.0-mingw-w64ucrt-14.0.0-r7.zip
+  WINLIBS_SHA256: cb2fbad6162540cdf5e1facdce08d4dac359e8cf64f7f696a99274291763b815
+  PYTHONDONTWRITEBYTECODE: '1'
+  PYTHONUTF8: '1'
+
+jobs:
+  windows:
+    if: github.repository == 'AZLisme/AnyPS5' && github.repository_id == '1430544501' && github.event_name == 'push' && github.ref == 'refs/heads/codex/roots-windows-20261105'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - family: icu
+            product: 458afb0c5e4a6bbd5d4aa21d004674d2bc4a0c58
+            tree: a3fb9a1ad64720beecb6a5ae046dd67f8fa08322
+            previous: f2caeb1c999c62ad5dd2532b5a4531af12454830
+          - family: ssl3
+            product: 176068deee632b72a753f1495852b8e8e8a3df56
+            tree: 3cfb0ace612028335fa5d565bcffc1e03523ce48
+            previous: 4a33c0bf29c087d7c58b4dd80a2ff0fe8547e997
+    runs-on: windows-latest
+    timeout-minutes: 90
+    env:
+      PRODUCT_FAMILY: ${{ matrix.family }}
+      PRODUCT_COMMIT: ${{ matrix.product }}
+      PRODUCT_TREE: ${{ matrix.tree }}
+      PREVIOUS_COMMIT: ${{ matrix.previous }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Keep source line endings deterministic
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: boykopovar/AnyPS5
+          ref: 1e24993fa3a7da25e8fc27152af654687ba64552
+          path: product
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Require the frozen main and exact product candidate
+        working-directory: product
+        run: |
+          set -euo pipefail
+          mkdir -p ../evidence
+          test "$(git rev-parse HEAD)" = "$MAIN_COMMIT"
+          git fetch --no-tags https://github.com/AZLisme/AnyPS5.git "$PRODUCT_COMMIT"
+          test "$(git rev-parse FETCH_HEAD)" = "$PRODUCT_COMMIT"
+          git merge --ff-only "$PRODUCT_COMMIT"
+          test "$(git rev-parse HEAD)" = "$PRODUCT_COMMIT"
+          test "$(git rev-parse HEAD^{tree})" = "$PRODUCT_TREE"
+          git merge-base --is-ancestor "$MAIN_COMMIT" HEAD
+          git merge-base --is-ancestor "$PREVIOUS_COMMIT" HEAD
+          git log -1 --format=fuller > ../evidence/source-inputs.txt
+          git diff --stat "$MAIN_COMMIT" HEAD >> ../evidence/source-inputs.txt
+          git submodule update --init --recursive --depth 1 --jobs 8
+          git submodule status --recursive >> ../evidence/source-inputs.txt
+          git diff --exit-code
+      - name: Use the Git for Windows CA bundle
+        run: |
+          set -euo pipefail
+          for prefix in ucrt64 mingw64; do
+            bundle="C:/Program Files/Git/$prefix/etc/ssl/certs/ca-bundle.crt"
+            if [ -f "$bundle" ]; then echo "SSL_CERT_FILE=$bundle" >> "$GITHUB_ENV"; exit 0; fi
+          done
+          exit 1
+      - name: Install the fixed WinLibs toolchain
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/$WINLIBS_ZIP"
+          curl -sSfL --retry 3 -o "$archive" "https://github.com/brechtsanders/winlibs_mingw/releases/download/$WINLIBS_RELEASE/$WINLIBS_ZIP"
+          python -c 'import hashlib,os,pathlib; p=pathlib.Path(os.environ["RUNNER_TEMP"])/os.environ["WINLIBS_ZIP"]; assert hashlib.sha256(p.read_bytes()).hexdigest()==os.environ["WINLIBS_SHA256"]'
+          7z x "$archive" -oC:/winlibs > /dev/null
+          echo 'C:\winlibs\mingw64\bin' >> "$GITHUB_PATH"
+      - name: Record native tools and request current CMake target metadata
+        run: |
+          set -euo pipefail
+          gcc --version | tee evidence/toolchain.txt
+          g++ -dumpmachine | tee -a evidence/toolchain.txt
+          cmake --version | tee -a evidence/toolchain.txt
+          ninja --version | tee -a evidence/toolchain.txt
+          python --version | tee -a evidence/toolchain.txt
+          where.exe gcc g++ cmake ninja python | tee -a evidence/toolchain.txt
+          mkdir -p build/.cmake/api/v1/query
+          touch build/.cmake/api/v1/query/codemodel-v2
+      - name: Configure the original normal root Release build
+        shell: pwsh
+        run: |
+          cmake -S product -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON -DANYPS5_RELINKER_ONLY=OFF -DANYPS5_USE_SYSTEM_DEPS=OFF -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DCMAKE_C_COMPILER_LAUNCHER= -DCMAKE_CXX_COMPILER_LAUNCHER= -DCMAKE_EXPORT_COMPILE_COMMANDS=ON 2>&1 | Tee-Object evidence/configure.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python product/tools/check_test_registration.py build 2>&1 | Tee-Object evidence/registration.log
+          exit $LASTEXITCODE
+      - name: Freeze the actual current targets and all matching registered tests
+        run: |
+          set -euo pipefail
+          cat > evidence/selection.py <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          import re
+          import subprocess
+          import sys
+          import xml.etree.ElementTree as ET
+
+          sys.path.insert(0, str(Path('product/tools').resolve()))
+          from build_mingw_host_only_tests import read_reply
+
+          lane = os.environ['PRODUCT_FAMILY']
+          family = r'^guest_icu_' if lane == 'icu' else r'^guest_(libressl|crypto_|ssl($|_))'
+          pattern = family + r'|^patched_libraries$|^public_headers($|_)'
+          root, targets = read_reply(Path('build'))
+          selected = [target for target in targets.values() if target.get('type') == 'EXECUTABLE' and (re.match(family, target['name']) or target['name'] == 'patched_libraries_tests')]
+          if not selected or not any(target['name'] == 'patched_libraries_tests' for target in selected):
+              raise SystemExit('Required original fixture targets missing')
+          artifacts = {}
+          for target in selected:
+              for item in target.get('artifacts', []):
+                  artifacts[(Path('build') / item['path']).resolve()] = target['name']
+          document = json.loads(subprocess.check_output(['ctest', '--test-dir', 'build', '--show-only=json-v1', '-R', pattern], text=True, encoding='utf-8-sig'))
+          tests = document['tests']
+          runtime = {test['name'] for test in tests if not test['name'].startswith('public_headers')}
+          headers = {test['name'] for test in tests if test['name'].startswith('public_headers')}
+          required = {'guest_icu_comparisons', 'guest_icu_set', 'guest_icu_enumeration', 'guest_icu_iterator'} if lane == 'icu' else {'guest_libressl_evp', 'guest_libressl3_evp', 'guest_libressl3_x509_pubkey_param', 'guest_libressl_protocol', 'guest_libressl_protocol_nid', 'guest_ssl'}
+          if not required <= runtime or 'patched_libraries' not in runtime or 'public_headers' not in headers or len(headers) < 2:
+              raise SystemExit('Current required registrations missing: ' + repr(sorted(required - runtime)))
+          scope = {'runtime': sorted(runtime), 'headers': sorted(headers), 'targets': sorted(target['name'] for target in selected)}
+          plan = Path('evidence/selection.json')
+          if sys.argv[1] == 'plan':
+              plan.write_text(json.dumps(scope, indent=2) + '\n', encoding='utf-8')
+              Path('evidence/targets.txt').write_text('\n'.join(['libs', *scope['targets']]) + '\n', encoding='utf-8')
+          else:
+              if scope != json.loads(plan.read_text(encoding='utf-8')):
+                  raise SystemExit('Registration or target set changed after configure')
+              for test in tests:
+                  command = test.get('command', [])
+                  if not command or not Path(command[0]).is_file():
+                      raise SystemExit('Unbuilt command: ' + test['name'])
+                  if test['name'] in runtime and Path(command[0]).resolve() not in artifacts:
+                      raise SystemExit('Runtime command does not resolve to an original selected target: ' + test['name'])
+              if sys.argv[1] == 'verify':
+                  for filename, expected in [('runtime', runtime), ('headers', headers)]:
+                      cases = list(ET.parse(Path('build') / (filename + '.xml')).getroot().iter('testcase'))
+                      if len(cases) != len(expected) or {case.get('name') for case in cases} != expected:
+                          raise SystemExit(filename + ': incomplete or duplicate test results')
+                      for case in cases:
+                          if case.get('status') != 'run' or any(case.find(key) is not None for key in ('failure', 'error', 'skipped')):
+                              raise SystemExit(filename + ': failed/skipped/not-run ' + str(case.get('name')))
+          Path('evidence/ctest-' + sys.argv[1] + '.json').write_text(json.dumps(document, indent=2) + '\n', encoding='utf-8')
+          print(lane + ': ' + str(len(runtime)) + ' runtime + ' + str(len(headers)) + ' headers; targets=' + str(len(selected)))
+          PY
+          python evidence/selection.py plan
+      - name: Build original fixtures and the full normal libraries
+        shell: pwsh
+        run: |
+          $targets = Get-Content evidence/targets.txt
+          cmake --build build --parallel 2 --target @targets 2>&1 | Tee-Object evidence/build.log
+          exit $LASTEXITCODE
+      - name: Require all selected runtime commands to be actual built fixture artifacts
+        run: python evidence/selection.py built
+      - name: Run the complete current family and patched-library tests
+        shell: pwsh
+        run: |
+          $family = if ($env:PRODUCT_FAMILY -eq 'icu') { '^guest_icu_' } else { '^guest_(libressl|crypto_|ssl($|_))' }
+          ctest --test-dir build -R "$family|^patched_libraries$" --no-tests=error -V --output-on-failure --output-log runtime.log --output-junit runtime.xml --parallel 1 2>&1 | Tee-Object evidence/runtime-console.log
+          exit $LASTEXITCODE
+      - name: Run all currently registered public-header checks
+        shell: pwsh
+        run: |
+          ctest --test-dir build -R '^public_headers($|_)' --no-tests=error --output-on-failure --output-log headers.log --output-junit headers.xml --parallel 1 2>&1 | Tee-Object evidence/headers-console.log
+          exit $LASTEXITCODE
+      - name: Require exact selected scope with zero failed skipped or not-run results
+        run: python evidence/selection.py verify
+      - name: Verify product source stayed unchanged
+        run: |
+          set -euo pipefail
+          test "$(git -C product rev-parse HEAD)" = "$PRODUCT_COMMIT"
+          test "$(git -C product rev-parse HEAD^{tree})" = "$PRODUCT_TREE"
+          git -C product diff --exit-code
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
+        with:
+          name: current-${{ matrix.family }}-windows-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            evidence
+            build/runtime.log
+            build/runtime.xml
+            build/headers.log
+            build/headers.xml
+            build/CMakeCache.txt
+          if-no-files-found: error
+          retention-days: 14
